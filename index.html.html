@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Black+Han+Sans&family=Be+Vietnam+Pro:wght@400;600;700&display=swap');
+
+:root{
+  --bg:#14161a; --panel:#1d2026; --panel2:#23272f;
+  --line:#30353f; --ink:#e8eaed; --dim:#8b919c;
+  --accent:#ff6b35; --accent2:#ffb347; --green:#3ecf8e;
+  --red:#e2574c; --blue:#4a9eff; --purple:#b06bff; --teal:#1fc7a8;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Gowun Dodum','Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.logo{font-family:'Black Han Sans';font-size:22px;letter-spacing:1px;white-space:nowrap}
+.logo span{color:var(--accent)}
+nav{display:flex;gap:6px;flex:1}
+nav button{font-family:inherit;font-size:15px;padding:9px 16px;border:none;border-radius:8px;
+  background:transparent;color:var(--dim);cursor:pointer;transition:.15s;white-space:nowrap}
+nav button.on{background:var(--accent);color:#1a1109;font-weight:bold}
+nav button:not(.on):hover{background:var(--panel2);color:var(--ink)}
+.right{display:flex;align-items:center;gap:12px}
+.langbtn{font-family:inherit;font-size:14px;font-weight:bold;padding:8px 14px;border:1px solid var(--blue);
+  border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;white-space:nowrap}
+.clock{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+main{flex:1;overflow:hidden}
+.view{display:none;height:100%}
+.view.on{display:flex}
+
+#tables{flex-direction:column;padding:18px;overflow:auto;width:100%}
+.zone-label{font-size:14px;color:var(--dim);margin:6px 2px 10px;font-weight:bold;letter-spacing:.5px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:22px}
+.table{background:var(--panel);border:2px solid var(--line);border-radius:14px;
+  padding:16px;cursor:pointer;transition:.15s;min-height:118px;display:flex;flex-direction:column;justify-content:space-between}
+.table:hover{transform:translateY(-2px);border-color:var(--accent2)}
+.table.busy{border-color:var(--accent);background:linear-gradient(160deg,#2a1f17,#1d2026)}
+.table .tname{font-size:18px;font-weight:bold}
+.table .tstat{font-size:13px;color:var(--dim)}
+.table.busy .tstat{color:var(--accent2)}
+.table .tamt{font-size:20px;font-family:'Black Han Sans';margin-top:8px}
+.table.busy .tamt{color:var(--accent)}
+.table.chan{border-style:solid}
+.table.chan .ttag{font-size:11px;padding:2px 8px;border-radius:10px;align-self:flex-start;margin-bottom:4px}
+.tag-pack{background:#2a3a2a;color:var(--green)}
+.tag-shopee{background:#3a2520;color:#ff8a5c}
+.tag-grab{background:#1f3a30;color:var(--teal)}
+
+#order{width:100%}
+.menu-side{flex:1;display:flex;flex-direction:column;padding:14px;overflow:hidden}
+.cats{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cats button{font-family:inherit;font-size:14px;padding:8px 16px;border:1px solid var(--line);
+  border-radius:20px;background:var(--panel);color:var(--dim);cursor:pointer}
+.cats button.on{background:var(--accent2);color:#1a1109;border-color:var(--accent2);font-weight:bold}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;overflow:auto;align-content:start;flex:1}
+.mitem{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 10px;
+  text-align:center;cursor:pointer;transition:.1s}
+.mitem:active{transform:scale(.95);background:var(--accent);color:#1a1109}
+.mitem .mn{font-size:15px;margin-bottom:6px}
+.mitem .mp{font-size:14px;color:var(--accent2);font-weight:bold}
+
+.cart-side{width:340px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column}
+.cart-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.cart-head .ct{font-size:18px;font-weight:bold}
+.cart-head .back{font-size:13px;background:var(--panel2);border:none;color:var(--dim);padding:6px 12px;border-radius:8px;cursor:pointer}
+.cart-items{flex:1;overflow:auto;padding:8px 0}
+.ci{display:flex;align-items:center;padding:10px 16px;gap:10px;border-bottom:1px solid #25282f}
+.ci .cn{flex:1;font-size:15px}
+.ci .cn small{display:block;color:var(--dim);font-size:12px}
+.qbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--ink);font-size:18px;cursor:pointer;line-height:1}
+.ci .qn{min-width:22px;text-align:center;font-weight:bold}
+.empty{text-align:center;color:var(--dim);padding:40px 0;font-size:14px}
+.cart-foot{padding:16px;border-top:1px solid var(--line)}
+.totrow.grand{display:flex;justify-content:space-between;font-size:24px;color:var(--ink);font-family:'Black Han Sans';margin:0 0 12px}
+.totrow.grand b{color:var(--accent)}
+.btnrow{display:flex;gap:10px}
+.approveb{flex:1;padding:16px;border:none;border-radius:12px;background:var(--green);color:#0c1f15;
+  font-family:'Black Han Sans';font-size:19px;cursor:pointer}
+.approveb:disabled{background:var(--line);color:var(--dim);cursor:not-allowed}
+.payb{flex:1;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#1a1109;
+  font-family:'Black Han Sans';font-size:19px;cursor:pointer}
+.payb:disabled{background:var(--line);color:var(--dim);cursor:not-allowed}
+
+#manage{flex-direction:column;padding:20px;overflow:auto;width:100%}
+.mform{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:end}
+.mform .fld{display:flex;flex-direction:column;gap:4px}
+.mform label{font-size:12px;color:var(--dim)}
+.mform input,.mform select{font-family:inherit;font-size:15px;padding:10px;border-radius:8px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.mform .addb{padding:11px 22px;border:none;border-radius:8px;background:var(--accent);color:#1a1109;
+  font-weight:bold;font-size:15px;cursor:pointer}
+.mtable{width:100%;border-collapse:collapse}
+.mtable th{text-align:left;padding:10px 14px;color:var(--dim);font-size:13px;border-bottom:2px solid var(--line)}
+.mtable td{padding:12px 14px;border-bottom:1px solid #25282f;font-size:15px}
+.delb{background:var(--red);border:none;color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+.catpill{font-size:12px;padding:3px 10px;border-radius:12px;background:var(--panel2);color:var(--accent2)}
+
+#stats{flex-direction:column;padding:24px;overflow:auto;width:100%}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card .cl{font-size:13px;color:var(--dim);margin-bottom:8px}
+.card .cv{font-size:30px;font-family:'Black Han Sans'}
+.card .cv.acc{color:var(--accent)}
+.card .cv.grn{color:var(--green)}
+.sect{font-size:18px;font-weight:bold;margin:8px 0 14px}
+.bar-wrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:24px}
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.bar .bn{width:120px;font-size:14px}
+.bar .btrack{flex:1;height:24px;background:var(--panel2);border-radius:6px;overflow:hidden}
+.bar .bfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px}
+.bar .bv{width:90px;text-align:right;font-size:14px;color:var(--dim)}
+.rtable{width:100%;border-collapse:collapse}
+.rtable th{text-align:left;padding:10px;color:var(--dim);font-size:13px;border-bottom:2px solid var(--line)}
+.rtable td{padding:10px;border-bottom:1px solid #25282f;font-size:14px}
+.rtable td.amt{color:var(--accent2);text-align:right;font-weight:bold}
+.rtable td.rp{text-align:center}
+.miniprint{background:transparent;border:1px solid var(--blue);color:var(--blue);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+.clearb{background:transparent;border:1px solid var(--red);color:var(--red);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px}
+
+#settings{flex-direction:column;padding:24px;overflow:auto;width:100%;max-width:520px}
+#settings .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+#settings label{font-size:13px;color:var(--dim)}
+#settings input{font-family:inherit;font-size:16px;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+#settings .saveb{padding:13px 28px;border:none;border-radius:10px;background:var(--accent);color:#1a1109;font-weight:bold;font-size:16px;cursor:pointer;align-self:start}
+.hint{font-size:13px;color:var(--dim);line-height:1.6;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:8px;padding:14px;margin-bottom:20px}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--green);color:#0c1f15;padding:16px 32px;border-radius:12px;font-weight:bold;
+  font-size:17px;opacity:0;transition:.3s;z-index:99;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+
+#receipt{display:none}
+@media print{
+  @page{size:72mm auto;margin:0}
+  body *{visibility:hidden}
+  #receipt,#receipt *{visibility:visible}
+  #receipt{display:block;position:absolute;left:0;top:0;width:72mm;
+    color:#000;background:#fff;font-family:'Gowun Dodum',monospace;padding:3mm 2mm}
+}
+#receipt{font-size:12px;color:#000;line-height:1.5}
+#receipt .r-shop{text-align:center;font-size:16px;font-weight:bold;margin-bottom:2px}
+#receipt .r-sub{text-align:center;font-size:11px;margin-bottom:1px}
+#receipt .r-big{text-align:center;font-size:15px;font-weight:bold;border:2px solid #000;padding:3px;margin:5px 0}
+#receipt .r-line{border-top:1px dashed #000;margin:6px 0}
+#receipt .r-meta{font-size:11px;margin-bottom:1px;display:flex;justify-content:space-between}
+#receipt .r-item{display:flex;font-size:13px;margin-bottom:3px}
+#receipt .r-item .ri-n{flex:1}
+#receipt .r-item .ri-q{width:34px;text-align:center;font-weight:bold}
+#receipt .r-item .ri-p{width:64px;text-align:right}
+#receipt .r-tot{display:flex;justify-content:space-between;font-size:15px;font-weight:bold;margin-top:4px}
+#receipt .r-foot{text-align:center;font-size:11px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">한입<span>POS</span></div>
+    <nav>
+      <button data-v="tables" class="on" data-t="nav_tables">테이블</button>
+      <button data-v="manage" data-t="nav_manage">메뉴관리</button>
+      <button data-v="stats" data-t="nav_stats">매출통계</button>
+      <button data-v="settings" data-t="nav_settings">설정</button>
+      <button data-v="viewer" data-t="nav_viewer">매출조회</button>
+    </nav>
+    <div class="right">
+      <button class="langbtn" id="langBtn">Tiếng Việt</button>
+      <div class="clock" id="clock"></div>
+    </div>
+  </header>
+  <main>
+    <section class="view on" id="tables">
+      <div class="zone-label" data-t="zone_hall">홀 테이블</div>
+      <div class="tgrid" id="tgridHall"></div>
+      <div class="zone-label" data-t="zone_chan">포장 · 배달</div>
+      <div class="tgrid" id="tgridChan"></div>
+    </section>
+
+    <section class="view" id="order">
+      <div class="menu-side">
+        <div class="cats" id="cats"></div>
+        <div class="mgrid" id="mgrid"></div>
+      </div>
+      <div class="cart-side">
+        <div class="cart-head">
+          <span class="ct" id="cartTitle">테이블</span>
+          <button class="back" id="backBtn" data-t="back">← 테이블</button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-foot">
+          <div class="totrow grand"><span data-t="total">합계</span> <b id="grand">0</b></div>
+          <div class="btnrow">
+            <button class="approveb" id="approveBtn" disabled data-t="approve">승인(주방출력)</button>
+            <button class="payb" id="payBtn" disabled data-t="pay">결제</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="manage">
+      <div class="mform">
+        <div class="fld"><label data-t="f_name">메뉴명</label><input id="mName" placeholder="김치찌개 / Canh Kimchi"></div>
+        <div class="fld"><label data-t="f_price">가격</label><input id="mPrice" type="number" placeholder="8000"></div>
+        <div class="fld"><label data-t="f_cat">분류</label>
+          <select id="mCat"></select>
+        </div>
+        <button class="addb" id="addMenu" data-t="add">+ 추가</button>
+      </div>
+      <table class="mtable">
+        <thead><tr><th data-t="f_cat">분류</th><th data-t="f_name">메뉴명</th><th data-t="f_price">가격</th><th></th></tr></thead>
+        <tbody id="menuBody"></tbody>
+      </table>
+    </section>
+
+    <section class="view" id="stats">
+      <div class="cards">
+        <div class="card"><div class="cl" data-t="s_today">오늘 매출</div><div class="cv acc" id="sToday">0</div></div>
+        <div class="card"><div class="cl" data-t="s_count">오늘 주문수</div><div class="cv" id="sCount">0</div></div>
+        <div class="card"><div class="cl" data-t="s_avg">객단가</div><div class="cv grn" id="sAvg">0</div></div>
+        <div class="card"><div class="cl" data-t="s_total">누적 총매출</div><div class="cv" id="sTotal">0</div></div>
+      </div>
+      <div class="sect" data-t="s_top">인기 메뉴 TOP</div>
+      <div class="bar-wrap" id="barWrap"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="sect" data-t="s_hist">결제 내역</div>
+        <button class="clearb" id="clearBtn" data-t="s_clear">기록 초기화</button>
+      </div>
+      <table class="rtable">
+        <thead><tr><th data-t="s_time">시각</th><th data-t="s_place">위치</th><th data-t="s_items">항목</th><th style="text-align:right" data-t="s_amt">금액</th><th></th></tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+    </section>
+
+    <section class="view" id="settings">
+      <div class="hint" data-t="set_hint">영수증/주문서 인쇄는 인쇄 화면이 뜨면 연결된 80mm 프린터를 선택해 출력합니다.</div>
+      <div class="fld"><label data-t="set_shop">가게 이름</label><input id="setName"></div>
+      <div class="fld"><label data-t="set_addr">주소</label><input id="setAddr"></div>
+      <div class="fld"><label data-t="set_tel">전화번호</label><input id="setTel"></div>
+      <div class="fld"><label data-t="set_tax">세금코드 (MST)</label><input id="setTax"></div>
+      <div class="fld"><label data-t="set_foot">영수증 하단 문구</label><input id="setFoot"></div>
+      <div class="fld"><label data-t="set_cur">화폐 단위</label><input id="setCur"></div>
+      <button class="saveb" id="saveSet" data-t="set_save">설정 저장</button>
+
+      <div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>
+      <div class="sect" data-t="bk_title">데이터 백업 / 복원</div>
+      <div class="hint" data-t="bk_hint">매출 기록을 가끔 파일로 백업하세요. 태블릿을 바꾸거나 데이터가 지워졌을 때 복원할 수 있습니다.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="saveb" id="backupBtn" style="background:var(--green)" data-t="bk_export">백업 파일 내보내기</button>
+        <button class="saveb" id="restoreBtn" style="background:var(--blue);color:#06121f" data-t="bk_import">백업 파일 복원</button>
+        <input type="file" id="restoreFile" accept=".json" style="display:none">
+      </div>
+      <div id="bkInfo" style="font-size:13px;color:var(--dim);margin-top:14px"></div>
+      <div class="hint" data-t="drive_hint" style="border-left-color:var(--green);margin-top:16px">백업 파일을 구글 드라이브에 올려두면 집·외부에서 핸드폰으로 매출을 볼 수 있습니다. 안드로이드에서 백업 후 알림(또는 다운로드 폴더)에서 파일을 길게 눌러 '공유 → 드라이브'를 선택하세요.</div>
+    </section>
+
+    <section class="view" id="viewer">
+      <div style="width:100%;max-width:760px;margin:0 auto;padding:24px;overflow:auto">
+        <div class="hint" data-t="vw_hint">구글 드라이브에 올려둔 백업 파일을 불러오면 매출을 확인할 수 있습니다. (이 화면은 보기 전용이라 영업 데이터에 영향을 주지 않습니다.)</div>
+        <button class="saveb" id="vwLoad" style="background:var(--blue);color:#06121f" data-t="vw_load">백업 파일 불러오기</button>
+        <input type="file" id="vwFile" accept=".json" style="display:none">
+        <div id="vwResult" style="margin-top:22px"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="receipt"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='hanip_pos_v3';
+
+/* ---------- i18n ---------- */
+const I18N={
+  ko:{
+    nav_tables:'테이블',nav_manage:'메뉴관리',nav_stats:'매출통계',nav_settings:'설정',nav_viewer:'매출조회',
+    zone_hall:'홀 테이블',zone_chan:'포장 · 배달',
+    back:'← 목록',total:'합계',approve:'승인(주방출력)',pay:'결제',
+    f_name:'메뉴명',f_price:'가격',f_cat:'분류',add:'+ 추가',
+    s_today:'오늘 매출',s_count:'오늘 주문수',s_avg:'객단가',s_total:'누적 총매출',
+    s_top:'인기 메뉴 TOP',s_hist:'결제 내역',s_clear:'기록 초기화',
+    s_time:'시각',s_place:'위치',s_items:'항목',s_amt:'금액',
+    set_hint:'영수증/주문서 인쇄는 인쇄 화면이 뜨면 연결된 80mm 프린터를 선택해 출력합니다. 프린터가 안 보이면 제조사 인쇄 서비스 앱을 먼저 설치하세요.',
+    set_shop:'가게 이름',set_addr:'주소',set_tel:'전화번호',set_tax:'세금코드 (MST)',
+    set_foot:'영수증 하단 문구',set_cur:'화폐 단위',set_save:'설정 저장',
+    all:'전체',cat_main:'메인',cat_side:'사이드',cat_drink:'음료',cat_alc:'주류',
+    table:'번 테이블',busy:'사용중',empty_t:'비어있음',pick:'메뉴를 선택하세요',
+    pack:'포장',shopee:'Shopee',grab:'Grab',
+    kitchen:'주방 주문서',pre_total:'예상합계',toast_pay:'결제완료',toast_appr:'주방 주문서 출력',
+    toast_add:'메뉴 추가됨',toast_need:'이름과 가격을 입력하세요',toast_save:'설정 저장됨',toast_clr:'기록 초기화됨',
+    bk_title:'데이터 백업 / 복원',bk_hint:'매출 기록을 가끔 파일로 백업하세요. 태블릿을 바꾸거나 데이터가 지워졌을 때 복원할 수 있습니다.',
+    bk_export:'백업 파일 내보내기',bk_import:'백업 파일 복원',
+    bk_done:'백업 파일이 저장되었습니다',bk_ok:'복원 완료',bk_bad:'올바른 백업 파일이 아닙니다',
+    bk_confirm:'복원하면 현재 데이터를 백업 파일로 덮어씁니다. 계속할까요?',
+    bk_last:'마지막 백업',bk_never:'아직 백업한 적 없음',bk_count:'건 결제 기록',
+    drive_hint:'백업 파일을 구글 드라이브에 올려두면 집·외부에서 핸드폰으로 매출을 볼 수 있습니다. 안드로이드에서 백업 후 알림(또는 다운로드 폴더)에서 파일을 길게 눌러 \'공유 → 드라이브\'를 선택하세요.',
+    nav_viewer:'매출조회',
+    vw_hint:'구글 드라이브에 올려둔 백업 파일을 불러오면 매출을 확인할 수 있습니다. (이 화면은 보기 전용이라 영업 데이터에 영향을 주지 않습니다.)',
+    vw_load:'백업 파일 불러오기',vw_bad:'올바른 백업 파일이 아닙니다',
+    vw_period:'백업 시점',vw_revtotal:'총 매출',vw_revtoday:'최근일 매출',vw_orders:'총 주문수',
+    vw_byday:'일자별 매출',vw_top:'인기 메뉴 TOP',vw_recent:'최근 결제',vw_none:'기록 없음',
+    confirm_clr:'모든 결제 기록을 삭제할까요?',reprint:'재출력',qty:'수량',item:'품목',amt:'금액',thanks:'감사합니다 · Cảm ơn quý khách'
+  },
+  vi:{
+    nav_tables:'Bàn',nav_manage:'Thực đơn',nav_stats:'Doanh thu',nav_settings:'Cài đặt',nav_viewer:'Xem doanh thu',
+    zone_hall:'Bàn tại quán',zone_chan:'Mang đi · Giao hàng',
+    back:'← Danh sách',total:'Tổng',approve:'Xác nhận (in bếp)',pay:'Thanh toán',
+    f_name:'Tên món',f_price:'Giá',f_cat:'Phân loại',add:'+ Thêm',
+    s_today:'Doanh thu hôm nay',s_count:'Số đơn hôm nay',s_avg:'TB/đơn',s_total:'Tổng doanh thu',
+    s_top:'Món bán chạy',s_hist:'Lịch sử thanh toán',s_clear:'Xóa lịch sử',
+    s_time:'Thời gian',s_place:'Vị trí',s_items:'Món',s_amt:'Số tiền',
+    set_hint:'Khi in, chọn máy in 80mm đã kết nối trên màn hình in. Nếu không thấy máy in, hãy cài ứng dụng Print Service của hãng máy in trước.',
+    set_shop:'Tên quán',set_addr:'Địa chỉ',set_tel:'Điện thoại',set_tax:'Mã số thuế (MST)',
+    set_foot:'Lời cuối hóa đơn',set_cur:'Đơn vị tiền',set_save:'Lưu cài đặt',
+    all:'Tất cả',cat_main:'Món chính',cat_side:'Món phụ',cat_drink:'Đồ uống',cat_alc:'Rượu bia',
+    table:' - Bàn',busy:'Đang dùng',empty_t:'Trống',pick:'Hãy chọn món',
+    pack:'Mang đi',shopee:'Shopee',grab:'Grab',
+    kitchen:'PHIẾU BẾP',pre_total:'Tạm tính',toast_pay:'Đã thanh toán',toast_appr:'Đã in phiếu bếp',
+    toast_add:'Đã thêm món',toast_need:'Nhập tên và giá',toast_save:'Đã lưu',toast_clr:'Đã xóa lịch sử',
+    bk_title:'Sao lưu / Khôi phục dữ liệu',bk_hint:'Thỉnh thoảng hãy sao lưu dữ liệu ra file. Có thể khôi phục khi đổi máy hoặc mất dữ liệu.',
+    bk_export:'Xuất file sao lưu',bk_import:'Khôi phục từ file',
+    bk_done:'Đã lưu file sao lưu',bk_ok:'Đã khôi phục',bk_bad:'File sao lưu không hợp lệ',
+    bk_confirm:'Khôi phục sẽ ghi đè dữ liệu hiện tại. Tiếp tục?',
+    bk_last:'Sao lưu gần nhất',bk_never:'Chưa sao lưu lần nào',bk_count:'đơn đã lưu',
+    drive_hint:'Tải file sao lưu lên Google Drive để xem doanh thu từ điện thoại khi ở nhà/bên ngoài. Trên Android, sau khi sao lưu, giữ file trong thông báo (hoặc thư mục Download) rồi chọn \'Chia sẻ → Drive\'.',
+    nav_viewer:'Xem doanh thu',
+    vw_hint:'Tải file sao lưu từ Google Drive để xem doanh thu. (Màn hình chỉ để xem, không ảnh hưởng dữ liệu bán hàng.)',
+    vw_load:'Tải file sao lưu',vw_bad:'File sao lưu không hợp lệ',
+    vw_period:'Thời điểm sao lưu',vw_revtotal:'Tổng doanh thu',vw_revtoday:'Doanh thu ngày gần nhất',vw_orders:'Tổng số đơn',
+    vw_byday:'Doanh thu theo ngày',vw_top:'Món bán chạy',vw_recent:'Giao dịch gần đây',vw_none:'Không có dữ liệu',
+    confirm_clr:'Xóa toàn bộ lịch sử thanh toán?',reprint:'In lại',qty:'SL',item:'Món',amt:'Tiền',thanks:'Cảm ơn quý khách · 감사합니다'
+  }
+};
+let LANG='ko';
+const T=k=>I18N[LANG][k]||k;
+
+/* category keys -> labels */
+const CATS=['main','side','drink','alc'];
+const catLabel=c=>T('cat_'+c);
+
+const DEFAULT_MENU=[
+  {id:1,ko:'김치찌개',vi:'Canh Kimchi',price:8000,cat:'main'},
+  {id:2,ko:'된장찌개',vi:'Canh tương đậu',price:8000,cat:'main'},
+  {id:3,ko:'제육볶음',vi:'Thịt heo xào cay',price:11000,cat:'main'},
+  {id:4,ko:'비빔밥',vi:'Cơm trộn Bibimbap',price:9000,cat:'main'},
+  {id:5,ko:'계란말이',vi:'Trứng cuộn',price:6000,cat:'side'},
+  {id:6,ko:'공기밥',vi:'Cơm trắng',price:1000,cat:'side'},
+  {id:7,ko:'콜라',vi:'Coca',price:2000,cat:'drink'},
+  {id:8,ko:'사이다',vi:'Sprite',price:2000,cat:'drink'},
+  {id:9,ko:'소주',vi:'Soju',price:5000,cat:'alc'},
+  {id:10,ko:'맥주',vi:'Bia',price:5000,cat:'alc'},
+];
+const NUM_TABLES=12;
+const CHANNELS=['pack','shopee','grab']; // takeout / shopee / grab
+const DEFAULT_SHOP={name:'한입식당',addr:'',tel:'',tax:'',foot:'',cur:'đ'};
+
+let state=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.menu){
+    s.shop=Object.assign({},DEFAULT_SHOP,s.shop||{});
+    if(s.lang)LANG=s.lang;return s;}}catch(e){}
+  const carts={};
+  for(let i=1;i<=NUM_TABLES;i++)carts['T'+i]=[];
+  CHANNELS.forEach(c=>carts[c]=[]);
+  return {menu:[...DEFAULT_MENU],nextId:11,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
+}
+function save(){state.lang=LANG;localStorage.setItem(KEY,JSON.stringify(state));}
+
+const mName=m=>LANG==='vi'?(m.vi||m.ko):(m.ko||m.vi);
+const fmt=n=>n.toLocaleString(LANG==='vi'?'vi-VN':'ko-KR');
+const money=n=>fmt(n)+(state.shop.cur||'đ');
+const today=()=>new Date().toISOString().slice(0,10);
+
+/* place key -> display name */
+function placeName(key){
+  if(key[0]==='T')return key.slice(1)+T('table');
+  return T(key);
+}
+
+let activePlace=null,activeCat='all';
+
+/* ---------- language ---------- */
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.getElementById('langBtn').textContent=LANG==='ko'?'Tiếng Việt':'한국어';
+  document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=T(el.dataset.t);});
+  fillCatSelect();
+  renderTables();
+  if(document.getElementById('order').classList.contains('on')){
+    document.getElementById('cartTitle').textContent=placeName(activePlace);
+    renderCats();renderMenu();renderCart();
+  }
+  if(document.getElementById('manage').classList.contains('on'))renderMenuMgmt();
+  if(document.getElementById('stats').classList.contains('on'))renderStats();
+}
+document.getElementById('langBtn').onclick=()=>{LANG=LANG==='ko'?'vi':'ko';save();applyLang();};
+
+/* ---------- nav ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+function show(v){
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id===v));
+  if(v==='tables')renderTables();
+  if(v==='manage')renderMenuMgmt();
+  if(v==='stats')renderStats();
+  if(v==='settings')fillSettings();
+}
+
+/* ---------- tables ---------- */
+function tableCard(key,label,tagClass,tagText){
+  const cart=state.carts[key]||[],amt=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const busy=cart.length>0;
+  const d=document.createElement('div');
+  d.className='table'+(busy?' busy':'')+(tagClass?' chan':'');
+  d.innerHTML=(tagClass?`<span class="ttag ${tagClass}">${tagText}</span>`:'')
+    +`<div><div class="tname">${label}</div>
+      <div class="tstat">${busy?T('busy'):T('empty_t')}</div></div>
+      <div class="tamt">${busy?money(amt):'·'}</div>`;
+  d.onclick=()=>openOrder(key);
+  return d;
+}
+function renderTables(){
+  const hall=document.getElementById('tgridHall');hall.innerHTML='';
+  for(let i=1;i<=NUM_TABLES;i++)hall.appendChild(tableCard('T'+i,i+'',''));
+  const chan=document.getElementById('tgridChan');chan.innerHTML='';
+  const tagmap={pack:'tag-pack',shopee:'tag-shopee',grab:'tag-grab'};
+  CHANNELS.forEach(c=>chan.appendChild(tableCard(c,T(c),tagmap[c],T(c))));
+}
+
+/* ---------- order ---------- */
+function openOrder(key){
+  activePlace=key;activeCat='all';
+  document.getElementById('cartTitle').textContent=placeName(key);
+  show('order');renderCats();renderMenu();renderCart();
+}
+document.getElementById('backBtn').onclick=()=>show('tables');
+
+function renderCats(){
+  const c=document.getElementById('cats');c.innerHTML='';
+  const list=[['all',T('all')],...CATS.map(k=>[k,catLabel(k)])];
+  list.forEach(([key,lbl])=>{
+    const b=document.createElement('button');b.textContent=lbl;
+    if(key===activeCat)b.classList.add('on');
+    b.onclick=()=>{activeCat=key;renderCats();renderMenu();};
+    c.appendChild(b);
+  });
+}
+function renderMenu(){
+  const g=document.getElementById('mgrid');g.innerHTML='';
+  state.menu.filter(m=>activeCat==='all'||m.cat===activeCat).forEach(m=>{
+    const d=document.createElement('div');d.className='mitem';
+    d.innerHTML=`<div class="mn">${mName(m)}</div><div class="mp">${money(m.price)}</div>`;
+    d.onclick=()=>addToCart(m);
+    g.appendChild(d);
+  });
+}
+function addToCart(m){
+  const cart=state.carts[activePlace];
+  const ex=cart.find(c=>c.id===m.id);
+  if(ex)ex.qty++;else cart.push({id:m.id,ko:m.ko,vi:m.vi,price:m.price,qty:1});
+  save();renderCart();
+}
+function chgQty(id,d){
+  const cart=state.carts[activePlace];const it=cart.find(c=>c.id===id);
+  if(!it)return;it.qty+=d;
+  if(it.qty<=0)state.carts[activePlace]=cart.filter(c=>c.id!==id);
+  save();renderCart();
+}
+function renderCart(){
+  const cart=state.carts[activePlace];const box=document.getElementById('cartItems');
+  if(!cart.length){box.innerHTML=`<div class="empty">${T('pick')}</div>`;}
+  else{box.innerHTML='';cart.forEach(c=>{
+    const d=document.createElement('div');d.className='ci';
+    d.innerHTML=`<div class="cn">${mName(c)}<small>${money(c.price)}</small></div>
+      <button class="qbtn">−</button><span class="qn">${c.qty}</span><button class="qbtn">+</button>`;
+    d.querySelectorAll('.qbtn')[0].onclick=()=>chgQty(c.id,-1);
+    d.querySelectorAll('.qbtn')[1].onclick=()=>chgQty(c.id,1);
+    box.appendChild(d);
+  });}
+  const tot=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  document.getElementById('grand').textContent=money(tot);
+  document.getElementById('approveBtn').disabled=!cart.length;
+  document.getElementById('payBtn').disabled=!cart.length;
+}
+
+/* ---------- printing ---------- */
+function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
+  const s=state.shop;
+  const dt=new Date();
+  const stamp=dt.toLocaleString(LANG==='vi'?'vi-VN':'ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const rows=o.items.map(it=>
+    `<div class="r-item"><div class="ri-n">${mName(it)}</div>
+     <div class="ri-q">${it.qty}</div>
+     <div class="ri-p">${mode==='kitchen'?'':fmt(it.price*it.qty)}</div></div>`).join('');
+  let html;
+  if(mode==='kitchen'){
+    html=`
+      <div class="r-big">${T('kitchen')}</div>
+      <div class="r-meta"><span>${o.placeLabel}</span><span>${o.no?('No.'+o.no):''}</span></div>
+      <div class="r-meta"><span>${stamp}</span></div>
+      <div class="r-line"></div>
+      <div class="r-item" style="font-weight:bold"><div class="ri-n">${T('item')}</div><div class="ri-q">${T('qty')}</div><div class="ri-p"></div></div>
+      ${rows}
+      <div class="r-line"></div>`;
+  }else{
+    html=`
+      <div class="r-shop">${s.name||''}</div>
+      ${s.addr?`<div class="r-sub">${s.addr}</div>`:''}
+      ${s.tel?`<div class="r-sub">Tel. ${s.tel}</div>`:''}
+      ${s.tax?`<div class="r-sub">MST: ${s.tax}</div>`:''}
+      <div class="r-line"></div>
+      <div class="r-meta"><span>${o.placeLabel}</span><span>${o.no?('No.'+o.no):''}</span></div>
+      <div class="r-meta"><span>${stamp}</span></div>
+      <div class="r-line"></div>
+      <div class="r-item" style="font-weight:bold"><div class="ri-n">${T('item')}</div><div class="ri-q">${T('qty')}</div><div class="ri-p">${T('amt')}</div></div>
+      ${rows}
+      <div class="r-line"></div>
+      <div class="r-tot"><span>${T('total')}</span><span>${money(o.total)}</span></div>
+      <div class="r-line"></div>
+      <div class="r-foot">${s.foot||T('thanks')}</div>`;
+  }
+  document.getElementById('receipt').innerHTML=html;
+  setTimeout(()=>window.print(),60);
+}
+
+/* approve = print kitchen ticket, keep amount on table, go back to list */
+document.getElementById('approveBtn').onclick=()=>{
+  const cart=state.carts[activePlace];if(!cart.length)return;
+  const tot=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  buildReceipt({placeLabel:placeName(activePlace),items:cart,total:tot},'kitchen');
+  toast(T('toast_appr'));
+  setTimeout(()=>show('tables'),300);
+};
+
+/* pay = record sale, print bill, clear place */
+document.getElementById('payBtn').onclick=()=>{
+  const cart=state.carts[activePlace];if(!cart.length)return;
+  const tot=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const rec={
+    no:state.seq++,date:today(),
+    time:new Date().toLocaleTimeString(LANG==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'}),
+    place:activePlace,placeLabel:placeName(activePlace),
+    items:cart.map(c=>({ko:c.ko,vi:c.vi,qty:c.qty,price:c.price})),total:tot
+  };
+  state.history.push(rec);
+  state.carts[activePlace]=[];save();
+  buildReceipt(rec,'bill');
+  toast(T('toast_pay')+' · '+money(tot));
+  setTimeout(()=>show('tables'),300);
+};
+
+/* ---------- menu mgmt ---------- */
+function fillCatSelect(){
+  const sel=document.getElementById('mCat');if(!sel)return;
+  const cur=sel.value;sel.innerHTML='';
+  CATS.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o);});
+  if(cur)sel.value=cur;
+}
+function renderMenuMgmt(){
+  fillCatSelect();
+  const b=document.getElementById('menuBody');b.innerHTML='';
+  state.menu.forEach(m=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${mName(m)}</td><td>${money(m.price)}</td>
+      <td><button class="delb" data-t="">${LANG==='ko'?'삭제':'Xóa'}</button></td>`;
+    tr.querySelector('.delb').onclick=()=>{state.menu=state.menu.filter(x=>x.id!==m.id);save();renderMenuMgmt();};
+    b.appendChild(tr);
+  });
+}
+document.getElementById('addMenu').onclick=()=>{
+  const n=document.getElementById('mName').value.trim();
+  const p=parseInt(document.getElementById('mPrice').value);
+  const c=document.getElementById('mCat').value;
+  if(!n||!p){toast(T('toast_need'));return;}
+  // store same text in both langs (user can type either)
+  state.menu.push({id:state.nextId++,ko:n,vi:n,price:p,cat:c});save();
+  document.getElementById('mName').value='';document.getElementById('mPrice').value='';
+  renderMenuMgmt();toast(T('toast_add'));
+};
+
+/* ---------- stats ---------- */
+function renderStats(){
+  const td=today();
+  const todayH=state.history.filter(h=>h.date===td);
+  const todaySum=todayH.reduce((s,h)=>s+h.total,0);
+  const totalSum=state.history.reduce((s,h)=>s+h.total,0);
+  document.getElementById('sToday').textContent=money(todaySum);
+  document.getElementById('sCount').textContent=todayH.length;
+  document.getElementById('sAvg').textContent=money(todayH.length?Math.round(todaySum/todayH.length):0);
+  document.getElementById('sTotal').textContent=money(totalSum);
+
+  const cnt={};state.history.forEach(h=>h.items.forEach(it=>{const k=mName(it);cnt[k]=(cnt[k]||0)+it.qty;}));
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max=top.length?top[0][1]:1;
+  const bw=document.getElementById('barWrap');
+  bw.innerHTML=top.length?'':`<div class="empty">${T('pick')}</div>`;
+  top.forEach(([n,q])=>{
+    const d=document.createElement('div');d.className='bar';
+    d.innerHTML=`<div class="bn">${n}</div><div class="btrack"><div class="bfill" style="width:${q/max*100}%"></div></div><div class="bv">${q}</div>`;
+    bw.appendChild(d);
+  });
+
+  const hb=document.getElementById('histBody');hb.innerHTML='';
+  [...state.history].reverse().slice(0,40).forEach(h=>{
+    const tr=document.createElement('tr');
+    const items=h.items.map(i=>mName(i)+'×'+i.qty).join(', ');
+    tr.innerHTML=`<td>${h.date} ${h.time}</td><td>${h.placeLabel||''}</td><td>${items}</td>
+      <td class="amt">${money(h.total)}</td><td class="rp"><button class="miniprint">${T('reprint')}</button></td>`;
+    tr.querySelector('.miniprint').onclick=()=>buildReceipt(h,'bill');
+    hb.appendChild(tr);
+  });
+}
+document.getElementById('clearBtn').onclick=()=>{
+  if(confirm(T('confirm_clr'))){state.history=[];save();renderStats();toast(T('toast_clr'));}
+};
+
+/* ---------- settings ---------- */
+function fillSettings(){
+  const s=state.shop;
+  setName.value=s.name||'';setAddr.value=s.addr||'';setTel.value=s.tel||'';
+  setTax.value=s.tax||'';setFoot.value=s.foot||'';setCur.value=s.cur||'đ';
+  renderBkInfo();
+}
+function renderBkInfo(){
+  const el=document.getElementById('bkInfo');if(!el)return;
+  const last=state.lastBackup?new Date(state.lastBackup).toLocaleString(LANG==='vi'?'vi-VN':'ko-KR'):T('bk_never');
+  el.textContent=`${T('bk_last')}: ${last} · ${state.history.length}${LANG==='ko'?'':' '}${T('bk_count')}`;
+}
+document.getElementById('saveSet').onclick=()=>{
+  state.shop={name:setName.value.trim(),addr:setAddr.value.trim(),tel:setTel.value.trim(),
+    tax:setTax.value.trim(),foot:setFoot.value.trim(),cur:setCur.value.trim()||'đ'};
+  save();toast(T('toast_save'));
+};
+
+/* ---------- backup / restore ---------- */
+document.getElementById('backupBtn').onclick=()=>{
+  state.lastBackup=Date.now();save();
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  a.href=url;
+  a.download=`POS백업_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(T('bk_done'));renderBkInfo();
+};
+document.getElementById('restoreBtn').onclick=()=>document.getElementById('restoreFile').click();
+document.getElementById('restoreFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data||!data.menu||!data.carts||!Array.isArray(data.history))throw 0;
+      if(!confirm(T('bk_confirm'))){e.target.value='';return;}
+      state=data;
+      state.shop=Object.assign({},DEFAULT_SHOP,state.shop||{});
+      if(state.lang)LANG=state.lang;
+      save();applyLang();fillSettings();
+      toast(T('bk_ok'));
+    }catch(err){toast(T('bk_bad'));}
+    e.target.value='';
+  };
+  reader.readAsText(f);
+};
+
+/* ---------- misc ---------- */
+let tt;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000);}
+function clock(){document.getElementById('clock').textContent=new Date().toLocaleString(LANG==='vi'?'vi-VN':'ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+setInterval(clock,1000);clock();
+
+/* ---------- sales viewer (read-only, from backup file) ---------- */
+document.getElementById('vwLoad').onclick=()=>document.getElementById('vwFile').click();
+document.getElementById('vwFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!d||!Array.isArray(d.history))throw 0;
+      renderViewer(d);
+    }catch(err){document.getElementById('vwResult').innerHTML=`<div class="empty">${T('vw_bad')}</div>`;}
+    e.target.value='';
+  };
+  reader.readAsText(f);
+};
+function vwName(it){return LANG==='vi'?(it.vi||it.ko):(it.ko||it.vi);}
+function renderViewer(d){
+  const cur=(d.shop&&d.shop.cur)||state.shop.cur||'đ';
+  const m=n=>n.toLocaleString(LANG==='vi'?'vi-VN':'ko-KR')+cur;
+  const H=d.history||[];
+  const total=H.reduce((s,h)=>s+h.total,0);
+  const byday={};H.forEach(h=>{byday[h.date]=(byday[h.date]||0)+h.total;});
+  const days=Object.keys(byday).sort().reverse();
+  const lastDay=days[0];
+  const lastRev=lastDay?byday[lastDay]:0;
+  const bkTime=d.lastBackup?new Date(d.lastBackup).toLocaleString(LANG==='vi'?'vi-VN':'ko-KR'):'-';
+  const cnt={};H.forEach(h=>h.items.forEach(it=>{const k=vwName(it);cnt[k]=(cnt[k]||0)+it.qty;}));
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxq=top.length?top[0][1]:1;
+  const maxd=days.length?Math.max(...days.map(x=>byday[x])):1;
+
+  let html=`
+    <div class="cards">
+      <div class="card"><div class="cl">${T('vw_revtotal')}</div><div class="cv acc">${m(total)}</div></div>
+      <div class="card"><div class="cl">${T('vw_revtoday')}</div><div class="cv grn">${m(lastRev)}</div></div>
+      <div class="card"><div class="cl">${T('vw_orders')}</div><div class="cv">${H.length}</div></div>
+    </div>
+    <div style="font-size:13px;color:var(--dim);margin-bottom:18px">${T('vw_period')}: ${bkTime}</div>`;
+
+  html+=`<div class="sect">${T('vw_byday')}</div><div class="bar-wrap">`;
+  if(!days.length)html+=`<div class="empty">${T('vw_none')}</div>`;
+  days.slice(0,14).forEach(dy=>{
+    html+=`<div class="bar"><div class="bn">${dy}</div>
+      <div class="btrack"><div class="bfill" style="width:${byday[dy]/maxd*100}%"></div></div>
+      <div class="bv">${m(byday[dy])}</div></div>`;
+  });
+  html+=`</div>`;
+
+  html+=`<div class="sect">${T('vw_top')}</div><div class="bar-wrap">`;
+  if(!top.length)html+=`<div class="empty">${T('vw_none')}</div>`;
+  top.forEach(([n,q])=>{
+    html+=`<div class="bar"><div class="bn">${n}</div>
+      <div class="btrack"><div class="bfill" style="width:${q/maxq*100}%"></div></div>
+      <div class="bv">${q}</div></div>`;
+  });
+  html+=`</div>`;
+
+  html+=`<div class="sect">${T('vw_recent')}</div><table class="rtable">
+    <thead><tr><th>${T('s_time')}</th><th>${T('s_place')}</th><th>${T('s_items')}</th><th style="text-align:right">${T('s_amt')}</th></tr></thead><tbody>`;
+  [...H].reverse().slice(0,40).forEach(h=>{
+    const items=h.items.map(i=>vwName(i)+'×'+i.qty).join(', ');
+    html+=`<tr><td>${h.date} ${h.time||''}</td><td>${h.placeLabel||''}</td><td>${items}</td><td class="amt">${m(h.total)}</td></tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('vwResult').innerHTML=html;
+}
+
+applyLang();
+</script>
+</body>
+</html>
