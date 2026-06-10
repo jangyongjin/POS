@@ -174,6 +174,7 @@ main{flex:1;overflow:hidden}
     </nav>
     <div class="right">
       <button class="langbtn" id="langBtn">Tiếng Việt</button>
+      <span id="syncBadge" style="font-size:12px;padding:5px 10px;border-radius:12px;background:var(--panel2);color:var(--dim);white-space:nowrap">○</span>
       <div class="clock" id="clock"></div>
     </div>
   </header>
@@ -260,6 +261,20 @@ main{flex:1;overflow:hidden}
       </div>
       <div id="bkInfo" style="font-size:13px;color:var(--dim);margin-top:14px"></div>
       <div class="hint" data-t="drive_hint" style="border-left-color:var(--green);margin-top:16px">백업 파일을 구글 드라이브에 올려두면 집·외부에서 핸드폰으로 매출을 볼 수 있습니다. 안드로이드에서 백업 후 알림(또는 다운로드 폴더)에서 파일을 길게 눌러 '공유 → 드라이브'를 선택하세요.</div>
+
+      <div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>
+      <div class="sect" data-t="cl_title">클라우드 공유 (구글 시트)</div>
+      <div class="hint" data-t="cl_hint">구글 시트 주소를 넣으면 여러 기기가 같은 데이터를 공유합니다. 주소 받는 방법은 함께 드린 안내문을 보세요.</div>
+      <div class="fld"><label data-t="cl_url">구글 앱스 스크립트 주소 (웹앱 URL)</label><input id="clUrl" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="saveb" id="clSave" style="background:var(--purple);color:#120a1f" data-t="cl_connect">연결 저장</button>
+        <button class="saveb" id="clPull" style="background:var(--blue);color:#06121f" data-t="cl_pull">지금 불러오기</button>
+        <button class="saveb" id="clPush" style="background:var(--green)" data-t="cl_push">지금 올리기</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--dim)">
+          <input type="checkbox" id="clAuto" style="width:18px;height:18px"> <span data-t="cl_auto">자동 동기화</span>
+        </label>
+      </div>
+      <div id="clInfo" style="font-size:13px;color:var(--dim);margin-top:14px"></div>
     </section>
 
     <section class="view" id="viewer">
@@ -308,6 +323,11 @@ const I18N={
     vw_load:'백업 파일 불러오기',vw_bad:'올바른 백업 파일이 아닙니다',
     vw_period:'백업 시점',vw_revtotal:'총 매출',vw_revtoday:'최근일 매출',vw_orders:'총 주문수',
     vw_byday:'일자별 매출',vw_top:'인기 메뉴 TOP',vw_recent:'최근 결제',vw_none:'기록 없음',
+    cl_title:'클라우드 공유 (구글 시트)',cl_hint:'구글 시트 주소를 넣으면 여러 기기가 같은 데이터를 공유합니다. 주소 받는 방법은 함께 드린 안내문을 보세요.',
+    cl_url:'구글 앱스 스크립트 주소 (웹앱 URL)',cl_connect:'연결 저장',cl_pull:'지금 불러오기',cl_push:'지금 올리기',cl_auto:'자동 동기화',
+    cl_saved:'연결 저장됨',cl_need:'먼저 주소를 입력하세요',cl_pulling:'불러오는 중...',cl_pushing:'올리는 중...',
+    cl_pulled:'불러오기 완료',cl_pushed:'올리기 완료',cl_err:'연결 실패 — 주소를 확인하세요',cl_pullwarn:'클라우드 데이터로 현재 내용을 덮어쓸까요?',
+    cl_synced:'동기화됨',cl_off:'미연결',cl_last:'마지막 동기화',
     confirm_clr:'모든 결제 기록을 삭제할까요?',reprint:'재출력',qty:'수량',item:'품목',amt:'금액',thanks:'감사합니다 · Cảm ơn quý khách'
   },
   vi:{
@@ -337,6 +357,11 @@ const I18N={
     vw_load:'Tải file sao lưu',vw_bad:'File sao lưu không hợp lệ',
     vw_period:'Thời điểm sao lưu',vw_revtotal:'Tổng doanh thu',vw_revtoday:'Doanh thu ngày gần nhất',vw_orders:'Tổng số đơn',
     vw_byday:'Doanh thu theo ngày',vw_top:'Món bán chạy',vw_recent:'Giao dịch gần đây',vw_none:'Không có dữ liệu',
+    cl_title:'Chia sẻ đám mây (Google Sheet)',cl_hint:'Nhập địa chỉ Google Sheet để nhiều thiết bị dùng chung dữ liệu. Xem hướng dẫn lấy địa chỉ kèm theo.',
+    cl_url:'Địa chỉ Google Apps Script (URL web app)',cl_connect:'Lưu kết nối',cl_pull:'Tải về ngay',cl_push:'Đẩy lên ngay',cl_auto:'Tự đồng bộ',
+    cl_saved:'Đã lưu kết nối',cl_need:'Nhập địa chỉ trước',cl_pulling:'Đang tải...',cl_pushing:'Đang đẩy...',
+    cl_pulled:'Đã tải về',cl_pushed:'Đã đẩy lên',cl_err:'Kết nối thất bại — kiểm tra địa chỉ',cl_pullwarn:'Ghi đè dữ liệu hiện tại bằng dữ liệu đám mây?',
+    cl_synced:'Đã đồng bộ',cl_off:'Chưa kết nối',cl_last:'Đồng bộ gần nhất',
     confirm_clr:'Xóa toàn bộ lịch sử thanh toán?',reprint:'In lại',qty:'SL',item:'Món',amt:'Tiền',thanks:'Cảm ơn quý khách · 감사합니다'
   }
 };
@@ -373,7 +398,7 @@ function load(){
   CHANNELS.forEach(c=>carts[c]=[]);
   return {menu:[...DEFAULT_MENU],nextId:11,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
 }
-function save(){state.lang=LANG;localStorage.setItem(KEY,JSON.stringify(state));}
+function save(){state.lang=LANG;localStorage.setItem(KEY,JSON.stringify(state));scheduleAutoPush();}
 
 const mName=m=>LANG==='vi'?(m.vi||m.ko):(m.ko||m.vi);
 const fmt=n=>n.toLocaleString(LANG==='vi'?'vi-VN':'ko-KR');
@@ -749,7 +774,110 @@ function renderViewer(d){
   document.getElementById('vwResult').innerHTML=html;
 }
 
+/* ---------- cloud sync (Google Sheet via Apps Script) ---------- */
+const CKEY='hanip_pos_cloud';
+let cloud=loadCloud();
+function loadCloud(){
+  try{const c=JSON.parse(localStorage.getItem(CKEY));if(c)return c;}catch(e){}
+  return {url:'',auto:false,last:null};
+}
+function saveCloud(){localStorage.setItem(CKEY,JSON.stringify(cloud));}
+
+function setBadge(stateStr){
+  const b=document.getElementById('syncBadge');if(!b)return;
+  if(!cloud.url){b.textContent='○ '+T('cl_off');b.style.color='var(--dim)';b.style.background='var(--panel2)';return;}
+  if(stateStr==='busy'){b.textContent='⟳';b.style.color='#06121f';b.style.background='var(--blue)';return;}
+  if(stateStr==='err'){b.textContent='⚠';b.style.color='#fff';b.style.background='var(--red)';return;}
+  b.textContent='● '+T('cl_synced');b.style.color='#0c1f15';b.style.background='var(--green)';
+}
+function renderClInfo(){
+  const el=document.getElementById('clInfo');if(!el)return;
+  const last=cloud.last?new Date(cloud.last).toLocaleString(LANG==='vi'?'vi-VN':'ko-KR'):'-';
+  el.textContent=(cloud.url?'':T('cl_off')+' · ')+T('cl_last')+': '+last;
+}
+
+/* push current state up to the sheet */
+let pushTimer=null,pushing=false;
+function scheduleAutoPush(){
+  if(!cloud.url||!cloud.auto)return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(()=>cloudPush(true),2500); // debounce 2.5s
+}
+async function cloudPush(silent){
+  if(!cloud.url){if(!silent)toast(T('cl_need'));return;}
+  if(pushing)return;
+  pushing=true;setBadge('busy');if(!silent)toast(T('cl_pushing'));
+  try{
+    await fetch(cloud.url,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, // text/plain avoids CORS preflight
+      body:JSON.stringify({data:JSON.stringify(state)})
+    });
+    cloud.last=Date.now();saveCloud();
+    setBadge('ok');renderClInfo();
+    if(!silent)toast(T('cl_pushed'));
+  }catch(err){setBadge('err');if(!silent)toast(T('cl_err'));}
+  pushing=false;
+}
+/* pull state down from the sheet */
+async function cloudPull(silent){
+  if(!cloud.url){if(!silent)toast(T('cl_need'));return;}
+  setBadge('busy');if(!silent)toast(T('cl_pulling'));
+  try{
+    const r=await fetch(cloud.url+'?t='+Date.now());
+    const j=await r.json();
+    if(j&&j.ok&&j.data){
+      const incoming=JSON.parse(j.data);
+      if(incoming&&incoming.menu&&incoming.carts){
+        state=incoming;
+        state.shop=Object.assign({},DEFAULT_SHOP,state.shop||{});
+        if(state.lang)LANG=state.lang;
+        localStorage.setItem(KEY,JSON.stringify(state));
+        cloud.last=Date.now();saveCloud();
+        applyLang();fillSettings();
+        setBadge('ok');renderClInfo();
+        if(!silent)toast(T('cl_pulled'));
+        return;
+      }
+    }
+    setBadge('ok');renderClInfo();
+    if(!silent)toast(T('cl_pulled'));
+  }catch(err){setBadge('err');if(!silent)toast(T('cl_err'));}
+}
+
+/* settings handlers */
+function fillCloud(){
+  const u=document.getElementById('clUrl');if(u)u.value=cloud.url||'';
+  const a=document.getElementById('clAuto');if(a)a.checked=!!cloud.auto;
+  renderClInfo();setBadge('ok');
+}
+document.getElementById('clSave').onclick=()=>{
+  cloud.url=document.getElementById('clUrl').value.trim();
+  cloud.auto=document.getElementById('clAuto').checked;
+  saveCloud();toast(T('cl_saved'));renderClInfo();setBadge('ok');
+};
+document.getElementById('clAuto').onchange=()=>{
+  cloud.auto=document.getElementById('clAuto').checked;saveCloud();
+};
+document.getElementById('clPush').onclick=()=>cloudPush(false);
+document.getElementById('clPull').onclick=()=>{
+  if(!cloud.url){toast(T('cl_need'));return;}
+  if(confirm(T('cl_pullwarn')))cloudPull(false);
+};
+
+/* auto-pull on open + periodic */
+if(cloud.url){
+  setBadge('ok');
+  cloudPull(true);
+  setInterval(()=>{if(cloud.url&&cloud.auto&&!pushing)cloudPull(true);},20000); // every 20s
+}
+
+/* extend fillSettings to also fill cloud fields */
+const _fillSettings=fillSettings;
+fillSettings=function(){_fillSettings();fillCloud();};
+
 applyLang();
+setBadge('ok');
 </script>
 </body>
 </html>
