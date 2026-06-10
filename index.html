@@ -132,6 +132,9 @@ main{flex:1;overflow:hidden}
 #settings .saveb{padding:13px 28px;border:none;border-radius:10px;background:var(--accent);color:#1a1109;font-weight:bold;font-size:16px;cursor:pointer;align-self:start}
 .hint{font-size:13px;color:var(--dim);line-height:1.6;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:8px;padding:14px;margin-bottom:20px}
 
+.optbtn{flex:1;padding:14px 0;border:2px solid var(--line);border-radius:10px;background:var(--panel2);
+  color:var(--ink);font-family:inherit;font-size:15px;cursor:pointer}
+.optbtn.on{border-color:var(--accent);background:var(--accent);color:#1a1109;font-weight:bold}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
   background:var(--green);color:#0c1f15;padding:16px 32px;border-radius:12px;font-weight:bold;
   font-size:17px;opacity:0;transition:.3s;z-index:99;pointer-events:none}
@@ -215,7 +218,9 @@ main{flex:1;overflow:hidden}
         <div class="fld"><label data-t="f_num">번호</label><input id="mNum" style="width:70px" placeholder="1"></div>
         <div class="fld"><label data-t="f_ko">한국어명</label><input id="mKo" placeholder="양념치킨"></div>
         <div class="fld"><label data-t="f_vi">베트남어명</label><input id="mVi" placeholder="Gà sốt cay"></div>
-        <div class="fld"><label data-t="f_price">가격</label><input id="mPrice" type="number" placeholder="50000"></div>
+        <div class="fld"><label data-t="f_price" id="lbPrice">가격</label><input id="mPrice" type="number" placeholder="50000"></div>
+        <div class="fld" id="fldPriceL" style="display:none"><label data-t="f_priceL">라지 가격</label><input id="mPriceL" type="number" placeholder="60000"></div>
+        <div class="fld"><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="mOpt" style="width:18px;height:18px"> <span data-t="f_opt">치킨옵션</span></label></div>
         <button class="addb" id="addMenu" data-t="add">+ 추가</button>
       </div>
       <table class="mtable">
@@ -233,6 +238,12 @@ main{flex:1;overflow:hidden}
       </div>
       <div class="sect" data-t="s_top">인기 메뉴 TOP</div>
       <div class="bar-wrap" id="barWrap"></div>
+      <div class="sect" data-t="st_bypay">결제수단별 매출</div>
+      <div class="bar-wrap" id="byPay"></div>
+      <div class="sect" data-t="st_byroute">경로별 매출</div>
+      <div class="bar-wrap" id="byRoute"></div>
+      <div class="sect" data-t="st_bycat">분류별 매출</div>
+      <div class="bar-wrap" id="byCat"></div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div class="sect" data-t="s_hist">결제 내역</div>
         <button class="clearb" id="clearBtn" data-t="s_clear">기록 초기화</button>
@@ -291,6 +302,44 @@ main{flex:1;overflow:hidden}
 </div>
 
 <div id="receipt"></div>
+
+<div id="optModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:340px;max-width:90vw">
+    <div id="optTitle" style="font-size:19px;font-weight:bold;margin-bottom:16px"></div>
+    <div id="optType" style="margin-bottom:16px">
+      <div style="font-size:13px;color:var(--dim);margin-bottom:8px" data-t="opt_type">종류</div>
+      <div style="display:flex;gap:10px">
+        <button class="optbtn" data-grp="type" data-val="boneless"></button>
+        <button class="optbtn" data-grp="type" data-val="wing"></button>
+      </div>
+    </div>
+    <div id="optSize" style="margin-bottom:20px">
+      <div style="font-size:13px;color:var(--dim);margin-bottom:8px" data-t="opt_size">사이즈</div>
+      <div style="display:flex;gap:10px">
+        <button class="optbtn" data-grp="size" data-val="M"></button>
+        <button class="optbtn" data-grp="size" data-val="L"></button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button id="optCancel" style="flex:1;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--dim);font-size:15px;cursor:pointer" data-t="opt_cancel">취소</button>
+      <button id="optAdd" style="flex:2;padding:13px;border:none;border-radius:10px;background:var(--green);color:#0c1f15;font-weight:bold;font-size:16px;cursor:pointer" data-t="opt_add">담기</button>
+    </div>
+  </div>
+</div>
+
+<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:340px;max-width:90vw">
+    <div style="font-size:18px;font-weight:bold;margin-bottom:6px" data-t="pm_title">결제 수단 선택</div>
+    <div style="font-size:24px;font-family:'Black Han Sans';color:var(--accent);margin-bottom:18px" id="payTotal">0</div>
+    <div id="payMethods" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <button class="optbtn" data-val="cash"></button>
+      <button class="optbtn" data-val="card"></button>
+      <button class="optbtn" data-val="transfer"></button>
+    </div>
+    <button id="payCancel" style="width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--dim);font-size:15px;cursor:pointer" data-t="opt_cancel">취소</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -303,6 +352,8 @@ const I18N={
     zone_hall:'홀 테이블',zone_chan:'포장 · 배달',
     back:'← 목록',total:'합계',approve:'승인(주방출력)',pay:'결제',
     f_name:'메뉴명',f_price:'가격',f_cat:'분류',f_num:'번호',f_ko:'한국어명',f_vi:'베트남어명',add:'+ 추가',
+    f_opt:'치킨옵션',f_priceL:'라지 가격',f_priceM:'미디엄 가격',
+    opt_type:'종류',opt_size:'사이즈',o_boneless:'순살',o_wing:'윙봉',o_m:'미디엄(M)',o_l:'라지(L)',opt_add:'담기',opt_cancel:'취소',
     s_today:'오늘 매출',s_count:'오늘 주문수',s_avg:'객단가',s_total:'누적 총매출',
     s_top:'인기 메뉴 TOP',s_hist:'결제 내역',s_clear:'기록 초기화',
     s_time:'시각',s_place:'위치',s_items:'항목',s_amt:'금액',
@@ -330,6 +381,9 @@ const I18N={
     cl_saved:'연결 저장됨',cl_need:'먼저 주소를 입력하세요',cl_pulling:'불러오는 중...',cl_pushing:'올리는 중...',
     cl_pulled:'불러오기 완료',cl_pushed:'올리기 완료',cl_err:'연결 실패 — 주소를 확인하세요',cl_pullwarn:'클라우드 데이터로 현재 내용을 덮어쓸까요?',
     cl_synced:'동기화됨',cl_off:'미연결',cl_last:'마지막 동기화',
+    pm_title:'결제 수단 선택',pm_cash:'현금',pm_card:'카드',pm_transfer:'계좌이체',
+    st_bypay:'결제수단별 매출',st_byroute:'경로별 매출',st_bycat:'분류별 매출',
+    rt_hall:'홀',rt_pack:'포장',rt_shopee:'Shopee',rt_grab:'Grab',
     confirm_clr:'모든 결제 기록을 삭제할까요?',reprint:'재출력',qty:'수량',item:'품목',amt:'금액',thanks:'감사합니다 · Cảm ơn quý khách'
   },
   vi:{
@@ -337,6 +391,8 @@ const I18N={
     zone_hall:'Bàn tại quán',zone_chan:'Mang đi · Giao hàng',
     back:'← Danh sách',total:'Tổng',approve:'Xác nhận (in bếp)',pay:'Thanh toán',
     f_name:'Tên món',f_price:'Giá',f_cat:'Phân loại',f_num:'Số',f_ko:'Tên (Hàn)',f_vi:'Tên (Việt)',add:'+ Thêm',
+    f_opt:'Tùy chọn gà',f_priceL:'Giá Lớn',f_priceM:'Giá Vừa',
+    opt_type:'Loại',opt_size:'Cỡ',o_boneless:'Không xương',o_wing:'Cánh/đùi',o_m:'Vừa (M)',o_l:'Lớn (L)',opt_add:'Thêm',opt_cancel:'Hủy',
     s_today:'Doanh thu hôm nay',s_count:'Số đơn hôm nay',s_avg:'TB/đơn',s_total:'Tổng doanh thu',
     s_top:'Món bán chạy',s_hist:'Lịch sử thanh toán',s_clear:'Xóa lịch sử',
     s_time:'Thời gian',s_place:'Vị trí',s_items:'Món',s_amt:'Số tiền',
@@ -364,6 +420,9 @@ const I18N={
     cl_saved:'Đã lưu kết nối',cl_need:'Nhập địa chỉ trước',cl_pulling:'Đang tải...',cl_pushing:'Đang đẩy...',
     cl_pulled:'Đã tải về',cl_pushed:'Đã đẩy lên',cl_err:'Kết nối thất bại — kiểm tra địa chỉ',cl_pullwarn:'Ghi đè dữ liệu hiện tại bằng dữ liệu đám mây?',
     cl_synced:'Đã đồng bộ',cl_off:'Chưa kết nối',cl_last:'Đồng bộ gần nhất',
+    pm_title:'Chọn phương thức thanh toán',pm_cash:'Tiền mặt',pm_card:'Thẻ',pm_transfer:'Chuyển khoản',
+    st_bypay:'Theo phương thức',st_byroute:'Theo kênh',st_bycat:'Theo phân loại',
+    rt_hall:'Tại quán',rt_pack:'Mang đi',rt_shopee:'Shopee',rt_grab:'Grab',
     confirm_clr:'Xóa toàn bộ lịch sử thanh toán?',reprint:'In lại',qty:'SL',item:'Món',amt:'Tiền',thanks:'Cảm ơn quý khách · 감사합니다'
   }
 };
@@ -407,6 +466,10 @@ function load(){
     });
     // ensure menu items have a num field
     s.menu.forEach((m,idx)=>{if(m.num===undefined)m.num='';});
+    // backfill cart line keys (older versions used id only)
+    Object.keys(s.carts).forEach(k=>{
+      (s.carts[k]||[]).forEach(c=>{if(!c.lk)c.lk=c.opt?(c.id+'|'+c.opt.type+'|'+c.opt.size):(''+c.id);});
+    });
     return s;}}catch(e){}
   const carts={};
   for(let i=1;i<=NUM_TABLES;i++)carts['T'+i]=[];
@@ -515,32 +578,46 @@ function renderMenu(){
   list.forEach(m=>{
     const d=document.createElement('div');d.className='mitem';
     const numTag=m.num?`<div style="font-size:12px;color:var(--dim);margin-bottom:2px">${m.num}</div>`:'';
-    d.innerHTML=`${numTag}<div class="mn">${mName(m)}</div><div class="mp">${money(m.price)}</div>`;
-    d.onclick=()=>addToCart(m);
+    const priceTxt=m.opt?(money(m.price)+' / '+money(m.priceL)):money(m.price);
+    d.innerHTML=`${numTag}<div class="mn">${mName(m)}</div><div class="mp">${priceTxt}</div>`;
+    d.onclick=()=>m.opt?openOptModal(m):addToCart(m,null);
     g.appendChild(d);
   });
 }
-function addToCart(m){
+/* lineKey distinguishes same menu with different options */
+function lineKey(id,opt){return opt?(id+'|'+opt.type+'|'+opt.size):(''+id);}
+function addToCart(m,opt){
   const cart=state.carts[activePlace];
-  const ex=cart.find(c=>c.id===m.id);
-  if(ex)ex.qty++;else cart.push({id:m.id,num:m.num,ko:m.ko,vi:m.vi,price:m.price,qty:1});
+  const lk=lineKey(m.id,opt);
+  const ex=cart.find(c=>c.lk===lk);
+  if(ex){ex.qty++;}
+  else{
+    const price=opt?(opt.size==='L'?m.priceL:m.price):m.price;
+    cart.push({lk:lk,id:m.id,num:m.num,ko:m.ko,vi:m.vi,price:price,qty:1,opt:opt||null});
+  }
   save();renderCart();
 }
-function chgQty(id,d){
-  const cart=state.carts[activePlace];const it=cart.find(c=>c.id===id);
+function chgQty(lk,d){
+  const cart=state.carts[activePlace];const it=cart.find(c=>c.lk===lk);
   if(!it)return;it.qty+=d;
-  if(it.qty<=0)state.carts[activePlace]=cart.filter(c=>c.id!==id);
+  if(it.qty<=0)state.carts[activePlace]=cart.filter(c=>c.lk!==lk);
   save();renderCart();
+}
+function optLabel(opt){
+  if(!opt)return '';
+  const t=opt.type==='boneless'?T('o_boneless'):T('o_wing');
+  const s=opt.size==='L'?'L':'M';
+  return ' ('+t+', '+s+')';
 }
 function renderCart(){
   const cart=state.carts[activePlace];const box=document.getElementById('cartItems');
   if(!cart.length){box.innerHTML=`<div class="empty">${T('pick')}</div>`;}
   else{box.innerHTML='';cart.forEach(c=>{
     const d=document.createElement('div');d.className='ci';
-    d.innerHTML=`<div class="cn">${mName(c)}<small>${money(c.price)}</small></div>
+    d.innerHTML=`<div class="cn">${mName(c)}<span style="color:var(--accent2)">${optLabel(c.opt)}</span><small>${money(c.price)}</small></div>
       <button class="qbtn">−</button><span class="qn">${c.qty}</span><button class="qbtn">+</button>`;
-    d.querySelectorAll('.qbtn')[0].onclick=()=>chgQty(c.id,-1);
-    d.querySelectorAll('.qbtn')[1].onclick=()=>chgQty(c.id,1);
+    d.querySelectorAll('.qbtn')[0].onclick=()=>chgQty(c.lk,-1);
+    d.querySelectorAll('.qbtn')[1].onclick=()=>chgQty(c.lk,1);
     box.appendChild(d);
   });}
   const tot=cart.reduce((s,c)=>s+c.price*c.qty,0);
@@ -549,13 +626,46 @@ function renderCart(){
   document.getElementById('payBtn').disabled=!cart.length;
 }
 
+/* ---------- option picker modal ---------- */
+let optCtx=null; // {menu, type, size}
+function openOptModal(m){
+  optCtx={menu:m,type:'boneless',size:'M'};
+  document.getElementById('optTitle').textContent=(m.num?m.num+'. ':'')+mName(m);
+  // label buttons
+  document.querySelectorAll('#optType .optbtn').forEach(b=>{
+    b.textContent=b.dataset.val==='boneless'?T('o_boneless'):T('o_wing');
+  });
+  document.querySelectorAll('#optSize .optbtn').forEach(b=>{
+    b.textContent=(b.dataset.val==='M'?T('o_m'):T('o_l'))+' '+(b.dataset.val==='M'?money(m.price):money(m.priceL));
+  });
+  syncOptBtns();
+  document.getElementById('optModal').style.display='flex';
+}
+function syncOptBtns(){
+  document.querySelectorAll('#optType .optbtn').forEach(b=>b.classList.toggle('on',b.dataset.val===optCtx.type));
+  document.querySelectorAll('#optSize .optbtn').forEach(b=>b.classList.toggle('on',b.dataset.val===optCtx.size));
+}
+document.querySelectorAll('#optModal .optbtn').forEach(b=>{
+  b.onclick=()=>{
+    if(b.dataset.grp==='type')optCtx.type=b.dataset.val;
+    else optCtx.size=b.dataset.val;
+    syncOptBtns();
+  };
+});
+document.getElementById('optCancel').onclick=()=>{document.getElementById('optModal').style.display='none';optCtx=null;};
+document.getElementById('optAdd').onclick=()=>{
+  if(!optCtx)return;
+  addToCart(optCtx.menu,{type:optCtx.type,size:optCtx.size});
+  document.getElementById('optModal').style.display='none';optCtx=null;
+};
+
 /* ---------- printing ---------- */
 function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
   const s=state.shop;
   const dt=new Date();
   const stamp=dt.toLocaleString(LANG==='vi'?'vi-VN':'ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   const rows=o.items.map(it=>
-    `<div class="r-item"><div class="ri-n">${it.num?(it.num+'. '):''}${mName(it)}</div>
+    `<div class="r-item"><div class="ri-n">${it.num?(it.num+'. '):''}${mName(it)}${optLabel(it.opt)}</div>
      <div class="ri-q">${it.qty}</div>
      <div class="ri-p">${mode==='kitchen'?'':fmt(it.price*it.qty)}</div></div>`).join('');
   let html;
@@ -601,19 +711,44 @@ document.getElementById('approveBtn').onclick=()=>{
 /* pay = record sale, print bill, clear place */
 document.getElementById('payBtn').onclick=()=>{
   const cart=state.carts[activePlace];if(!cart.length)return;
+  openPayModal();
+};
+/* derive route key from place: T* -> hall, packN -> pack, etc. */
+function routeOf(placeKey){
+  if(placeKey[0]==='T')return 'hall';
+  const m=placeKey.match(/^([a-z]+)\d+$/);
+  return m?m[1]:placeKey;
+}
+function finalizePay(method){
+  const cart=state.carts[activePlace];if(!cart.length)return;
   const tot=cart.reduce((s,c)=>s+c.price*c.qty,0);
   const rec={
     no:state.seq++,date:today(),
     time:new Date().toLocaleTimeString(LANG==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'}),
-    place:activePlace,placeLabel:placeName(activePlace),
-    items:cart.map(c=>({num:c.num,ko:c.ko,vi:c.vi,qty:c.qty,price:c.price})),total:tot
+    place:activePlace,placeLabel:placeName(activePlace),route:routeOf(activePlace),
+    pay:method,
+    items:cart.map(c=>({num:c.num,ko:c.ko,vi:c.vi,qty:c.qty,price:c.price,opt:c.opt||null,cat:menuCatOf(c.id)})),total:tot
   };
   state.history.push(rec);
   state.carts[activePlace]=[];save();
   buildReceipt(rec,'bill');
   toast(T('toast_pay')+' · '+money(tot));
   setTimeout(()=>show('tables'),300);
-};
+}
+function menuCatOf(id){const m=state.menu.find(x=>x.id===id);return m?m.cat:'';}
+
+/* payment method modal */
+function openPayModal(){
+  document.querySelectorAll('#payMethods .optbtn').forEach(b=>{
+    b.textContent=T('pm_'+b.dataset.val);
+  });
+  document.getElementById('payTotal').textContent=money(state.carts[activePlace].reduce((s,c)=>s+c.price*c.qty,0));
+  document.getElementById('payModal').style.display='flex';
+}
+document.querySelectorAll('#payMethods .optbtn').forEach(b=>{
+  b.onclick=()=>{document.getElementById('payModal').style.display='none';finalizePay(b.dataset.val);};
+});
+document.getElementById('payCancel').onclick=()=>{document.getElementById('payModal').style.display='none';};
 
 /* ---------- menu mgmt ---------- */
 function fillCatSelect(){
@@ -627,7 +762,8 @@ function renderMenuMgmt(){
   const b=document.getElementById('menuBody');b.innerHTML='';
   menuSorted(state.menu).forEach(m=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${m.num||''}</td><td>${m.ko||''}</td><td>${m.vi||''}</td><td>${money(m.price)}</td>
+    const priceTxt=m.opt?(money(m.price)+' / '+money(m.priceL)):money(m.price);
+    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${m.num||''}</td><td>${m.ko||''}</td><td>${m.vi||''}</td><td>${priceTxt}</td>
       <td><button class="delb">${LANG==='ko'?'삭제':'Xóa'}</button></td>`;
     tr.querySelector('.delb').onclick=()=>{state.menu=state.menu.filter(x=>x.id!==m.id);save();renderMenuMgmt();};
     b.appendChild(tr);
@@ -639,13 +775,25 @@ document.getElementById('addMenu').onclick=()=>{
   const p=parseInt(document.getElementById('mPrice').value);
   const c=document.getElementById('mCat').value;
   const num=document.getElementById('mNum').value.trim();
+  const isOpt=document.getElementById('mOpt').checked;
+  const pL=parseInt(document.getElementById('mPriceL').value);
   if((!ko&&!vi)||!p){toast(T('toast_need'));return;}
-  // 한쪽만 입력하면 다른 쪽도 같은 값으로 채움(전환 시 빈칸 방지)
-  state.menu.push({id:state.nextId++,num:num,ko:ko||vi,vi:vi||ko,price:p,cat:c});save();
+  if(isOpt&&!pL){toast(T('toast_need'));return;}
+  const item={id:state.nextId++,num:num,ko:ko||vi,vi:vi||ko,price:p,cat:c,opt:isOpt};
+  if(isOpt)item.priceL=pL;          // p = 미디엄 가격, priceL = 라지 가격
+  state.menu.push(item);save();
   document.getElementById('mKo').value='';document.getElementById('mVi').value='';
-  document.getElementById('mPrice').value='';document.getElementById('mNum').value='';
+  document.getElementById('mPrice').value='';document.getElementById('mPriceL').value='';
+  document.getElementById('mNum').value='';document.getElementById('mOpt').checked=false;
+  toggleOptFields();
   renderMenuMgmt();toast(T('toast_add'));
 };
+function toggleOptFields(){
+  const on=document.getElementById('mOpt').checked;
+  document.getElementById('fldPriceL').style.display=on?'':'none';
+  document.getElementById('lbPrice').textContent=on?T('f_priceM'):T('f_price');
+}
+document.getElementById('mOpt').onchange=toggleOptFields;
 
 /* ---------- stats ---------- */
 function renderStats(){
@@ -669,11 +817,40 @@ function renderStats(){
     bw.appendChild(d);
   });
 
+  // ----- breakdowns (today) -----
+  function drawBreakdown(elId, map, labelFn){
+    const el=document.getElementById(elId);el.innerHTML='';
+    const entries=Object.entries(map).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    if(!entries.length){el.innerHTML=`<div class="empty">${T('vw_none')}</div>`;return;}
+    const mx=Math.max(...entries.map(e=>e[1]));
+    entries.forEach(([k,v])=>{
+      const d=document.createElement('div');d.className='bar';
+      d.innerHTML=`<div class="bn">${labelFn(k)}</div><div class="btrack"><div class="bfill" style="width:${v/mx*100}%"></div></div><div class="bv">${money(v)}</div>`;
+      el.appendChild(d);
+    });
+  }
+  const payMap={cash:0,card:0,transfer:0};
+  const routeMap={hall:0,pack:0,shopee:0,grab:0};
+  const catMap={main:0,side:0,drink:0,alc:0};
+  todayH.forEach(h=>{
+    if(h.pay&&payMap[h.pay]!==undefined)payMap[h.pay]+=h.total;
+    const r=h.route||routeOf(h.place||'');
+    if(routeMap[r]!==undefined)routeMap[r]+=h.total;
+    h.items.forEach(it=>{
+      const c=it.cat||menuCatOf(it.id);
+      if(catMap[c]!==undefined)catMap[c]+=it.price*it.qty;
+    });
+  });
+  drawBreakdown('byPay',payMap,k=>T('pm_'+k));
+  drawBreakdown('byRoute',routeMap,k=>T('rt_'+k));
+  drawBreakdown('byCat',catMap,k=>catLabel(k));
+
   const hb=document.getElementById('histBody');hb.innerHTML='';
   [...state.history].reverse().slice(0,40).forEach(h=>{
     const tr=document.createElement('tr');
     const items=h.items.map(i=>mName(i)+'×'+i.qty).join(', ');
-    tr.innerHTML=`<td>${h.date} ${h.time}</td><td>${h.placeLabel||''}</td><td>${items}</td>
+    const payTag=h.pay?` <span style="font-size:11px;color:var(--blue)">[${T('pm_'+h.pay)}]</span>`:'';
+    tr.innerHTML=`<td>${h.date} ${h.time}</td><td>${h.placeLabel||''}${payTag}</td><td>${items}</td>
       <td class="amt">${money(h.total)}</td><td class="rp"><button class="miniprint">${T('reprint')}</button></td>`;
     tr.querySelector('.miniprint').onclick=()=>buildReceipt(h,'bill');
     hb.appendChild(tr);
