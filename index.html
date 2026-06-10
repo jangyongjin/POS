@@ -262,6 +262,8 @@ main{flex:1;overflow:hidden}
       <div class="fld"><label data-t="set_tax">세금코드 (MST)</label><input id="setTax"></div>
       <div class="fld"><label data-t="set_foot">영수증 하단 문구</label><input id="setFoot"></div>
       <div class="fld"><label data-t="set_cur">화폐 단위</label><input id="setCur"></div>
+      <div class="fld"><label data-t="set_vatFood">음식 부가세율 % (메인·사이드·음료)</label><input id="setVatFood" type="number" placeholder="8"></div>
+      <div class="fld"><label data-t="set_vatAlc">주류 부가세율 %</label><input id="setVatAlc" type="number" placeholder="10"></div>
       <button class="saveb" id="saveSet" data-t="set_save">설정 저장</button>
 
       <div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>
@@ -330,7 +332,17 @@ main{flex:1;overflow:hidden}
 <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center">
   <div style="background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:340px;max-width:90vw">
     <div style="font-size:18px;font-weight:bold;margin-bottom:6px" data-t="pm_title">결제 수단 선택</div>
-    <div style="font-size:24px;font-family:'Black Han Sans';color:var(--accent);margin-bottom:18px" id="payTotal">0</div>
+    <div style="font-size:24px;font-family:'Black Han Sans';color:var(--accent);margin-bottom:14px" id="payTotal">0</div>
+    <div style="border-top:1px solid var(--line);padding-top:12px;margin-bottom:14px">
+      <div style="font-size:13px;color:var(--dim);margin-bottom:8px" data-t="dc_title">할인 (선택)</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="dcPct" type="number" placeholder="%" style="width:70px;font-family:inherit;font-size:15px;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink)">
+        <span style="color:var(--dim)" data-t="dc_pct">% 할인</span>
+        <input id="dcAmt" type="number" placeholder="0" style="flex:1;font-family:inherit;font-size:15px;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink)">
+        <span style="color:var(--dim)" data-t="dc_amt">금액</span>
+      </div>
+      <div id="payFinal" style="font-size:16px;margin-top:10px;text-align:right;color:var(--green);font-weight:bold"></div>
+    </div>
     <div id="payMethods" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
       <button class="optbtn" data-val="cash"></button>
       <button class="optbtn" data-val="card"></button>
@@ -359,7 +371,10 @@ const I18N={
     s_time:'시각',s_place:'위치',s_items:'항목',s_amt:'금액',
     set_hint:'영수증/주문서 인쇄는 인쇄 화면이 뜨면 연결된 80mm 프린터를 선택해 출력합니다. 프린터가 안 보이면 제조사 인쇄 서비스 앱을 먼저 설치하세요.',
     set_shop:'가게 이름',set_addr:'주소',set_tel:'전화번호',set_tax:'세금코드 (MST)',
-    set_foot:'영수증 하단 문구',set_cur:'화폐 단위',set_save:'설정 저장',
+    set_foot:'영수증 하단 문구',set_cur:'화폐 단위',set_vatFood:'음식 부가세율 % (메인·사이드·음료)',set_vatAlc:'주류 부가세율 %',set_save:'설정 저장',
+    r_vatFood:'음식 부가세',r_vatAlc:'주류 부가세',
+    dc_title:'할인 (선택)',dc_pct:'% 할인',dc_amt:'금액 할인',dc_none:'할인 없음',
+    r_subtotal:'소계',r_discount:'할인',r_vat:'부가세 포함',
     all:'전체',cat_main:'메인',cat_side:'사이드',cat_drink:'음료',cat_alc:'주류',
     table:'번 테이블',busy:'사용중',empty_t:'비어있음',pick:'메뉴를 선택하세요',
     pack:'포장',shopee:'Shopee',grab:'Grab',
@@ -398,7 +413,10 @@ const I18N={
     s_time:'Thời gian',s_place:'Vị trí',s_items:'Món',s_amt:'Số tiền',
     set_hint:'Khi in, chọn máy in 80mm đã kết nối trên màn hình in. Nếu không thấy máy in, hãy cài ứng dụng Print Service của hãng máy in trước.',
     set_shop:'Tên quán',set_addr:'Địa chỉ',set_tel:'Điện thoại',set_tax:'Mã số thuế (MST)',
-    set_foot:'Lời cuối hóa đơn',set_cur:'Đơn vị tiền',set_save:'Lưu cài đặt',
+    set_foot:'Lời cuối hóa đơn',set_cur:'Đơn vị tiền',set_vatFood:'VAT món ăn % (chính·phụ·nước)',set_vatAlc:'VAT rượu bia %',set_save:'Lưu cài đặt',
+    r_vatFood:'VAT món ăn',r_vatAlc:'VAT rượu bia',
+    dc_title:'Giảm giá (tùy chọn)',dc_pct:'Giảm %',dc_amt:'Giảm tiền',dc_none:'Không giảm',
+    r_subtotal:'Tạm tính',r_discount:'Giảm giá',r_vat:'Đã gồm VAT',
     all:'Tất cả',cat_main:'Món chính',cat_side:'Món phụ',cat_drink:'Đồ uống',cat_alc:'Rượu bia',
     table:' - Bàn',busy:'Đang dùng',empty_t:'Trống',pick:'Hãy chọn món',
     pack:'Mang đi',shopee:'Shopee',grab:'Grab',
@@ -448,7 +466,7 @@ const DEFAULT_MENU=[
 const NUM_TABLES=12;
 const CHAN_TYPES=['pack','shopee','grab']; // takeout / shopee / grab
 const CHAN_COUNT=8; // 각 채널당 칸 개수
-const DEFAULT_SHOP={name:'한입식당',addr:'',tel:'',tax:'',foot:'',cur:'đ'};
+const DEFAULT_SHOP={name:'한입식당',addr:'',tel:'',tax:'',foot:'',cur:'đ',vatFood:8,vatAlc:10};
 
 let state=load();
 function load(){
@@ -691,7 +709,11 @@ function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
       <div class="r-item" style="font-weight:bold"><div class="ri-n">${T('item')}</div><div class="ri-q">${T('qty')}</div><div class="ri-p">${T('amt')}</div></div>
       ${rows}
       <div class="r-line"></div>
+      ${o.disc?`<div class="r-meta"><span>${T('r_subtotal')}</span><span>${fmt(o.subtotal)}</span></div>
+      <div class="r-meta"><span>${T('r_discount')}</span><span>-${fmt(o.disc)}</span></div>`:''}
       <div class="r-tot"><span>${T('total')}</span><span>${money(o.total)}</span></div>
+      ${o.vatFood?`<div class="r-meta" style="margin-top:3px"><span>${T('r_vatFood')} (${state.shop.vatFood}%)</span><span>${fmt(o.vatFood)}</span></div>`:''}
+      ${o.vatAlc?`<div class="r-meta"><span>${T('r_vatAlc')} (${state.shop.vatAlc}%)</span><span>${fmt(o.vatAlc)}</span></div>`:''}
       <div class="r-line"></div>
       <div class="r-foot">${s.foot||T('thanks')}</div>`;
   }
@@ -719,15 +741,38 @@ function routeOf(placeKey){
   const m=placeKey.match(/^([a-z]+)\d+$/);
   return m?m[1]:placeKey;
 }
+function calcDiscount(subtotal){
+  const pct=parseFloat(document.getElementById('dcPct').value)||0;
+  const amt=parseFloat(document.getElementById('dcAmt').value)||0;
+  let d=0;
+  if(pct>0)d+=subtotal*pct/100;
+  if(amt>0)d+=amt;
+  d=Math.round(d);
+  if(d>subtotal)d=subtotal;
+  return {pct,amt,disc:d};
+}
 function finalizePay(method){
   const cart=state.carts[activePlace];if(!cart.length)return;
-  const tot=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const subtotal=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const {pct,amt,disc}=calcDiscount(subtotal);
+  const tot=subtotal-disc;
+  // 할인 후 비율로 음식/주류 금액 분리
+  const ratio=subtotal>0?tot/subtotal:1;
+  let foodNet=0,alcNet=0;
+  cart.forEach(c=>{
+    const line=c.price*c.qty*ratio;
+    if(menuCatOf(c.id)==='alc')alcNet+=line;else foodNet+=line;
+  });
+  const vf=state.shop.vatFood||0, va=state.shop.vatAlc||0;
+  const vatFood=vf>0?Math.round(foodNet-foodNet/(1+vf/100)):0;
+  const vatAlc =va>0?Math.round(alcNet -alcNet /(1+va/100)):0;
   const rec={
     no:state.seq++,date:today(),
     time:new Date().toLocaleTimeString(LANG==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'}),
     place:activePlace,placeLabel:placeName(activePlace),route:routeOf(activePlace),
     pay:method,
-    items:cart.map(c=>({num:c.num,ko:c.ko,vi:c.vi,qty:c.qty,price:c.price,opt:c.opt||null,cat:menuCatOf(c.id)})),total:tot
+    items:cart.map(c=>({num:c.num,ko:c.ko,vi:c.vi,qty:c.qty,price:c.price,opt:c.opt||null,cat:menuCatOf(c.id)})),
+    subtotal:subtotal,discPct:pct,discAmt:amt,disc:disc,vatFood:vatFood,vatAlc:vatAlc,total:tot
   };
   state.history.push(rec);
   state.carts[activePlace]=[];save();
@@ -738,13 +783,23 @@ function finalizePay(method){
 function menuCatOf(id){const m=state.menu.find(x=>x.id===id);return m?m.cat:'';}
 
 /* payment method modal */
+function refreshPayFinal(){
+  const sub=state.carts[activePlace].reduce((s,c)=>s+c.price*c.qty,0);
+  const {disc}=calcDiscount(sub);
+  document.getElementById('payFinal').textContent=T('total')+': '+money(sub-disc);
+}
 function openPayModal(){
   document.querySelectorAll('#payMethods .optbtn').forEach(b=>{
     b.textContent=T('pm_'+b.dataset.val);
   });
+  document.getElementById('dcPct').value='';
+  document.getElementById('dcAmt').value='';
   document.getElementById('payTotal').textContent=money(state.carts[activePlace].reduce((s,c)=>s+c.price*c.qty,0));
+  refreshPayFinal();
   document.getElementById('payModal').style.display='flex';
 }
+document.getElementById('dcPct').oninput=refreshPayFinal;
+document.getElementById('dcAmt').oninput=refreshPayFinal;
 document.querySelectorAll('#payMethods .optbtn').forEach(b=>{
   b.onclick=()=>{document.getElementById('payModal').style.display='none';finalizePay(b.dataset.val);};
 });
@@ -806,7 +861,7 @@ function renderStats(){
   document.getElementById('sAvg').textContent=money(todayH.length?Math.round(todaySum/todayH.length):0);
   document.getElementById('sTotal').textContent=money(totalSum);
 
-  const cnt={};state.history.forEach(h=>h.items.forEach(it=>{const k=mName(it);cnt[k]=(cnt[k]||0)+it.qty;}));
+  const cnt={};state.history.forEach(h=>h.items.forEach(it=>{const k=mName(it)+optLabel(it.opt);cnt[k]=(cnt[k]||0)+it.qty;}));
   const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const max=top.length?top[0][1]:1;
   const bw=document.getElementById('barWrap');
@@ -848,7 +903,7 @@ function renderStats(){
   const hb=document.getElementById('histBody');hb.innerHTML='';
   [...state.history].reverse().slice(0,40).forEach(h=>{
     const tr=document.createElement('tr');
-    const items=h.items.map(i=>mName(i)+'×'+i.qty).join(', ');
+    const items=h.items.map(i=>mName(i)+optLabel(i.opt)+'×'+i.qty).join(', ');
     const payTag=h.pay?` <span style="font-size:11px;color:var(--blue)">[${T('pm_'+h.pay)}]</span>`:'';
     tr.innerHTML=`<td>${h.date} ${h.time}</td><td>${h.placeLabel||''}${payTag}</td><td>${items}</td>
       <td class="amt">${money(h.total)}</td><td class="rp"><button class="miniprint">${T('reprint')}</button></td>`;
@@ -865,6 +920,8 @@ function fillSettings(){
   const s=state.shop;
   setName.value=s.name||'';setAddr.value=s.addr||'';setTel.value=s.tel||'';
   setTax.value=s.tax||'';setFoot.value=s.foot||'';setCur.value=s.cur||'đ';
+  document.getElementById('setVatFood').value=(s.vatFood!==undefined?s.vatFood:8);
+  document.getElementById('setVatAlc').value=(s.vatAlc!==undefined?s.vatAlc:10);
   renderBkInfo();
 }
 function renderBkInfo(){
@@ -874,7 +931,9 @@ function renderBkInfo(){
 }
 document.getElementById('saveSet').onclick=()=>{
   state.shop={name:setName.value.trim(),addr:setAddr.value.trim(),tel:setTel.value.trim(),
-    tax:setTax.value.trim(),foot:setFoot.value.trim(),cur:setCur.value.trim()||'đ'};
+    tax:setTax.value.trim(),foot:setFoot.value.trim(),cur:setCur.value.trim()||'đ',
+    vatFood:parseFloat(document.getElementById('setVatFood').value)||0,
+    vatAlc:parseFloat(document.getElementById('setVatAlc').value)||0};
   save();toast(T('toast_save'));
 };
 
@@ -945,7 +1004,7 @@ function renderViewer(d){
   const lastDay=days[0];
   const lastRev=lastDay?byday[lastDay]:0;
   const bkTime=d.lastBackup?new Date(d.lastBackup).toLocaleString(LANG==='vi'?'vi-VN':'ko-KR'):'-';
-  const cnt={};H.forEach(h=>h.items.forEach(it=>{const k=vwName(it);cnt[k]=(cnt[k]||0)+it.qty;}));
+  const cnt={};H.forEach(h=>h.items.forEach(it=>{const k=vwName(it)+optLabel(it.opt);cnt[k]=(cnt[k]||0)+it.qty;}));
   const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxq=top.length?top[0][1]:1;
   const maxd=days.length?Math.max(...days.map(x=>byday[x])):1;
@@ -979,7 +1038,7 @@ function renderViewer(d){
   html+=`<div class="sect">${T('vw_recent')}</div><table class="rtable">
     <thead><tr><th>${T('s_time')}</th><th>${T('s_place')}</th><th>${T('s_items')}</th><th style="text-align:right">${T('s_amt')}</th></tr></thead><tbody>`;
   [...H].reverse().slice(0,40).forEach(h=>{
-    const items=h.items.map(i=>vwName(i)+'×'+i.qty).join(', ');
+    const items=h.items.map(i=>vwName(i)+optLabel(i.opt)+'×'+i.qty).join(', ');
     html+=`<tr><td>${h.date} ${h.time||''}</td><td>${h.placeLabel||''}</td><td>${items}</td><td class="amt">${m(h.total)}</td></tr>`;
   });
   html+=`</tbody></table>`;
