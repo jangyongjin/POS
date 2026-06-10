@@ -709,11 +709,11 @@ function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
       <div class="r-item" style="font-weight:bold"><div class="ri-n">${T('item')}</div><div class="ri-q">${T('qty')}</div><div class="ri-p">${T('amt')}</div></div>
       ${rows}
       <div class="r-line"></div>
-      ${o.disc?`<div class="r-meta"><span>${T('r_subtotal')}</span><span>${fmt(o.subtotal)}</span></div>
-      <div class="r-meta"><span>${T('r_discount')}</span><span>-${fmt(o.disc)}</span></div>`:''}
-      ${o.vatFood?`<div class="r-meta"><span>${T('r_vatFood')} (${state.shop.vatFood}%)</span><span>${fmt(o.vatFood)}</span></div>`:''}
-      ${o.vatAlc?`<div class="r-meta"><span>${T('r_vatAlc')} (${state.shop.vatAlc}%)</span><span>${fmt(o.vatAlc)}</span></div>`:''}
-      ${(o.vatFood||o.vatAlc)?`<div class="r-meta" style="font-weight:bold"><span>${T('r_vatSum')}</span><span>${fmt((o.vatFood||0)+(o.vatAlc||0))}</span></div>`:''}
+      <div class="r-meta"><span>${T('r_subtotal')}</span><span>${fmt(o.subtotal)}</span></div>
+      ${o.disc?`<div class="r-meta"><span>${T('r_discount')}</span><span>-${fmt(o.disc)}</span></div>`:''}
+      ${o.vatFood?`<div class="r-meta"><span>${T('r_vatFood')} (${state.shop.vatFood}%)</span><span>+${fmt(o.vatFood)}</span></div>`:''}
+      ${o.vatAlc?`<div class="r-meta"><span>${T('r_vatAlc')} (${state.shop.vatAlc}%)</span><span>+${fmt(o.vatAlc)}</span></div>`:''}
+      ${(o.vatFood||o.vatAlc)?`<div class="r-meta" style="font-weight:bold"><span>${T('r_vatSum')}</span><span>+${fmt((o.vatFood||0)+(o.vatAlc||0))}</span></div>`:''}
       <div class="r-line" style="border-top-style:solid"></div>
       <div class="r-tot"><span>${T('total')}</span><span>${money(o.total)}</span></div>
       <div class="r-line"></div>
@@ -755,40 +755,48 @@ function calcDiscount(subtotal){
 }
 function finalizePay(method){
   const cart=state.carts[activePlace];if(!cart.length)return;
-  const subtotal=cart.reduce((s,c)=>s+c.price*c.qty,0);
-  const {pct,amt,disc}=calcDiscount(subtotal);
-  const tot=subtotal-disc;
-  // 할인 후 비율로 음식/주류 금액 분리
-  const ratio=subtotal>0?tot/subtotal:1;
-  let foodNet=0,alcNet=0;
-  cart.forEach(c=>{
-    const line=c.price*c.qty*ratio;
-    if(menuCatOf(c.id)==='alc')alcNet+=line;else foodNet+=line;
-  });
-  const vf=state.shop.vatFood||0, va=state.shop.vatAlc||0;
-  const vatFood=vf>0?Math.round(foodNet-foodNet/(1+vf/100)):0;
-  const vatAlc =va>0?Math.round(alcNet -alcNet /(1+va/100)):0;
+  const t=computeTotals();
   const rec={
     no:state.seq++,date:today(),
     time:new Date().toLocaleTimeString(LANG==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'}),
     place:activePlace,placeLabel:placeName(activePlace),route:routeOf(activePlace),
     pay:method,
     items:cart.map(c=>({num:c.num,ko:c.ko,vi:c.vi,qty:c.qty,price:c.price,opt:c.opt||null,cat:menuCatOf(c.id)})),
-    subtotal:subtotal,discPct:pct,discAmt:amt,disc:disc,vatFood:vatFood,vatAlc:vatAlc,total:tot
+    subtotal:t.subtotal,discPct:t.pct,discAmt:t.amt,disc:t.disc,netAfterDisc:t.netAfterDisc,vatFood:t.vatFood,vatAlc:t.vatAlc,total:t.total
   };
   state.history.push(rec);
   state.carts[activePlace]=[];save();
   buildReceipt(rec,'bill');
-  toast(T('toast_pay')+' · '+money(tot));
+  toast(T('toast_pay')+' · '+money(t.total));
   setTimeout(()=>show('tables'),300);
 }
 function menuCatOf(id){const m=state.menu.find(x=>x.id===id);return m?m.cat:'';}
 
+/* compute totals for current cart with given discount (shared by preview & finalize) */
+function computeTotals(){
+  const cart=state.carts[activePlace];
+  const subtotal=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const {pct,amt,disc}=calcDiscount(subtotal);
+  const netAfterDisc=subtotal-disc;
+  const ratio=subtotal>0?netAfterDisc/subtotal:1;
+  let foodNet=0,alcNet=0;
+  cart.forEach(c=>{const line=c.price*c.qty*ratio;if(menuCatOf(c.id)==='alc')alcNet+=line;else foodNet+=line;});
+  const vf=state.shop.vatFood||0, va=state.shop.vatAlc||0;
+  const vatFood=Math.round(foodNet*vf/100);
+  const vatAlc=Math.round(alcNet*va/100);
+  const total=netAfterDisc+vatFood+vatAlc;
+  return {subtotal,pct,amt,disc,netAfterDisc,vatFood,vatAlc,total};
+}
+
 /* payment method modal */
 function refreshPayFinal(){
-  const sub=state.carts[activePlace].reduce((s,c)=>s+c.price*c.qty,0);
-  const {disc}=calcDiscount(sub);
-  document.getElementById('payFinal').textContent=T('total')+': '+money(sub-disc);
+  const t=computeTotals();
+  const vatSum=t.vatFood+t.vatAlc;
+  document.getElementById('payFinal').innerHTML=
+    `${T('r_subtotal')}: ${money(t.subtotal)}`
+    +(t.disc?`<br>${T('r_discount')}: -${money(t.disc)}`:'')
+    +(vatSum?`<br>${T('r_vatSum')}: +${money(vatSum)}`:'')
+    +`<br><span style="font-size:18px">${T('total')}: ${money(t.total)}</span>`;
 }
 function openPayModal(){
   document.querySelectorAll('#payMethods .optbtn').forEach(b=>{
