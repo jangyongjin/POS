@@ -372,7 +372,7 @@ const I18N={
     set_hint:'영수증/주문서 인쇄는 인쇄 화면이 뜨면 연결된 80mm 프린터를 선택해 출력합니다. 프린터가 안 보이면 제조사 인쇄 서비스 앱을 먼저 설치하세요.',
     set_shop:'가게 이름',set_addr:'주소',set_tel:'전화번호',set_tax:'세금코드 (MST)',
     set_foot:'영수증 하단 문구',set_cur:'화폐 단위',set_vatFood:'음식 부가세율 % (메인·사이드·음료)',set_vatAlc:'주류 부가세율 %',set_save:'설정 저장',
-    r_vatFood:'음식 부가세',r_vatAlc:'주류 부가세',
+    r_vatFood:'음식 부가세',r_vatAlc:'주류 부가세',r_vatSum:'부가세 합계',
     dc_title:'할인 (선택)',dc_pct:'% 할인',dc_amt:'금액 할인',dc_none:'할인 없음',
     r_subtotal:'소계',r_discount:'할인',r_vat:'부가세 포함',
     all:'전체',cat_main:'메인',cat_side:'사이드',cat_drink:'음료',cat_alc:'주류',
@@ -414,7 +414,7 @@ const I18N={
     set_hint:'Khi in, chọn máy in 80mm đã kết nối trên màn hình in. Nếu không thấy máy in, hãy cài ứng dụng Print Service của hãng máy in trước.',
     set_shop:'Tên quán',set_addr:'Địa chỉ',set_tel:'Điện thoại',set_tax:'Mã số thuế (MST)',
     set_foot:'Lời cuối hóa đơn',set_cur:'Đơn vị tiền',set_vatFood:'VAT món ăn % (chính·phụ·nước)',set_vatAlc:'VAT rượu bia %',set_save:'Lưu cài đặt',
-    r_vatFood:'VAT món ăn',r_vatAlc:'VAT rượu bia',
+    r_vatFood:'VAT món ăn',r_vatAlc:'VAT rượu bia',r_vatSum:'Tổng VAT',
     dc_title:'Giảm giá (tùy chọn)',dc_pct:'Giảm %',dc_amt:'Giảm tiền',dc_none:'Không giảm',
     r_subtotal:'Tạm tính',r_discount:'Giảm giá',r_vat:'Đã gồm VAT',
     all:'Tất cả',cat_main:'Món chính',cat_side:'Món phụ',cat_drink:'Đồ uống',cat_alc:'Rượu bia',
@@ -711,9 +711,11 @@ function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
       <div class="r-line"></div>
       ${o.disc?`<div class="r-meta"><span>${T('r_subtotal')}</span><span>${fmt(o.subtotal)}</span></div>
       <div class="r-meta"><span>${T('r_discount')}</span><span>-${fmt(o.disc)}</span></div>`:''}
-      <div class="r-tot"><span>${T('total')}</span><span>${money(o.total)}</span></div>
-      ${o.vatFood?`<div class="r-meta" style="margin-top:3px"><span>${T('r_vatFood')} (${state.shop.vatFood}%)</span><span>${fmt(o.vatFood)}</span></div>`:''}
+      ${o.vatFood?`<div class="r-meta"><span>${T('r_vatFood')} (${state.shop.vatFood}%)</span><span>${fmt(o.vatFood)}</span></div>`:''}
       ${o.vatAlc?`<div class="r-meta"><span>${T('r_vatAlc')} (${state.shop.vatAlc}%)</span><span>${fmt(o.vatAlc)}</span></div>`:''}
+      ${(o.vatFood||o.vatAlc)?`<div class="r-meta" style="font-weight:bold"><span>${T('r_vatSum')}</span><span>${fmt((o.vatFood||0)+(o.vatAlc||0))}</span></div>`:''}
+      <div class="r-line" style="border-top-style:solid"></div>
+      <div class="r-tot"><span>${T('total')}</span><span>${money(o.total)}</span></div>
       <div class="r-line"></div>
       <div class="r-foot">${s.foot||T('thanks')}</div>`;
   }
