@@ -713,7 +713,6 @@ function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
       ${o.disc?`<div class="r-meta"><span>${T('r_discount')}</span><span>-${fmt(o.disc)}</span></div>`:''}
       ${o.vatFood?`<div class="r-meta"><span>${T('r_vatFood')} (${state.shop.vatFood}%)</span><span>+${fmt(o.vatFood)}</span></div>`:''}
       ${o.vatAlc?`<div class="r-meta"><span>${T('r_vatAlc')} (${state.shop.vatAlc}%)</span><span>+${fmt(o.vatAlc)}</span></div>`:''}
-      ${(o.vatFood||o.vatAlc)?`<div class="r-meta" style="font-weight:bold"><span>${T('r_vatSum')}</span><span>+${fmt((o.vatFood||0)+(o.vatAlc||0))}</span></div>`:''}
       <div class="r-line" style="border-top-style:solid"></div>
       <div class="r-tot"><span>${T('total')}</span><span>${money(o.total)}</span></div>
       <div class="r-line"></div>
@@ -791,11 +790,11 @@ function computeTotals(){
 /* payment method modal */
 function refreshPayFinal(){
   const t=computeTotals();
-  const vatSum=t.vatFood+t.vatAlc;
   document.getElementById('payFinal').innerHTML=
     `${T('r_subtotal')}: ${money(t.subtotal)}`
     +(t.disc?`<br>${T('r_discount')}: -${money(t.disc)}`:'')
-    +(vatSum?`<br>${T('r_vatSum')}: +${money(vatSum)}`:'')
+    +(t.vatFood?`<br>${T('r_vatFood')}: +${money(t.vatFood)}`:'')
+    +(t.vatAlc?`<br>${T('r_vatAlc')}: +${money(t.vatAlc)}`:'')
     +`<br><span style="font-size:18px">${T('total')}: ${money(t.total)}</span>`;
 }
 function openPayModal(){
