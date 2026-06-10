@@ -212,13 +212,14 @@ main{flex:1;overflow:hidden}
         <div class="fld"><label data-t="f_cat">분류</label>
           <select id="mCat"></select>
         </div>
-        <div class="fld"><label data-t="f_num">번호</label><input id="mNum" style="width:80px" placeholder="1"></div>
-        <div class="fld"><label data-t="f_name">메뉴명</label><input id="mName" placeholder="김치찌개 / Canh Kimchi"></div>
-        <div class="fld"><label data-t="f_price">가격</label><input id="mPrice" type="number" placeholder="8000"></div>
+        <div class="fld"><label data-t="f_num">번호</label><input id="mNum" style="width:70px" placeholder="1"></div>
+        <div class="fld"><label data-t="f_ko">한국어명</label><input id="mKo" placeholder="양념치킨"></div>
+        <div class="fld"><label data-t="f_vi">베트남어명</label><input id="mVi" placeholder="Gà sốt cay"></div>
+        <div class="fld"><label data-t="f_price">가격</label><input id="mPrice" type="number" placeholder="50000"></div>
         <button class="addb" id="addMenu" data-t="add">+ 추가</button>
       </div>
       <table class="mtable">
-        <thead><tr><th data-t="f_cat">분류</th><th data-t="f_num">번호</th><th data-t="f_name">메뉴명</th><th data-t="f_price">가격</th><th></th></tr></thead>
+        <thead><tr><th data-t="f_cat">분류</th><th data-t="f_num">번호</th><th data-t="f_ko">한국어명</th><th data-t="f_vi">베트남어명</th><th data-t="f_price">가격</th><th></th></tr></thead>
         <tbody id="menuBody"></tbody>
       </table>
     </section>
@@ -301,7 +302,7 @@ const I18N={
     nav_tables:'테이블',nav_manage:'메뉴관리',nav_stats:'매출통계',nav_settings:'설정',nav_viewer:'매출조회',
     zone_hall:'홀 테이블',zone_chan:'포장 · 배달',
     back:'← 목록',total:'합계',approve:'승인(주방출력)',pay:'결제',
-    f_name:'메뉴명',f_price:'가격',f_cat:'분류',f_num:'번호',add:'+ 추가',
+    f_name:'메뉴명',f_price:'가격',f_cat:'분류',f_num:'번호',f_ko:'한국어명',f_vi:'베트남어명',add:'+ 추가',
     s_today:'오늘 매출',s_count:'오늘 주문수',s_avg:'객단가',s_total:'누적 총매출',
     s_top:'인기 메뉴 TOP',s_hist:'결제 내역',s_clear:'기록 초기화',
     s_time:'시각',s_place:'위치',s_items:'항목',s_amt:'금액',
@@ -335,7 +336,7 @@ const I18N={
     nav_tables:'Bàn',nav_manage:'Thực đơn',nav_stats:'Doanh thu',nav_settings:'Cài đặt',nav_viewer:'Xem doanh thu',
     zone_hall:'Bàn tại quán',zone_chan:'Mang đi · Giao hàng',
     back:'← Danh sách',total:'Tổng',approve:'Xác nhận (in bếp)',pay:'Thanh toán',
-    f_name:'Tên món',f_price:'Giá',f_cat:'Phân loại',f_num:'Số',add:'+ Thêm',
+    f_name:'Tên món',f_price:'Giá',f_cat:'Phân loại',f_num:'Số',f_ko:'Tên (Hàn)',f_vi:'Tên (Việt)',add:'+ Thêm',
     s_today:'Doanh thu hôm nay',s_count:'Số đơn hôm nay',s_avg:'TB/đơn',s_total:'Tổng doanh thu',
     s_top:'Món bán chạy',s_hist:'Lịch sử thanh toán',s_clear:'Xóa lịch sử',
     s_time:'Thời gian',s_place:'Vị trí',s_items:'Món',s_amt:'Số tiền',
@@ -626,22 +627,23 @@ function renderMenuMgmt(){
   const b=document.getElementById('menuBody');b.innerHTML='';
   menuSorted(state.menu).forEach(m=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${m.num||''}</td><td>${mName(m)}</td><td>${money(m.price)}</td>
+    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${m.num||''}</td><td>${m.ko||''}</td><td>${m.vi||''}</td><td>${money(m.price)}</td>
       <td><button class="delb">${LANG==='ko'?'삭제':'Xóa'}</button></td>`;
     tr.querySelector('.delb').onclick=()=>{state.menu=state.menu.filter(x=>x.id!==m.id);save();renderMenuMgmt();};
     b.appendChild(tr);
   });
 }
 document.getElementById('addMenu').onclick=()=>{
-  const n=document.getElementById('mName').value.trim();
+  const ko=document.getElementById('mKo').value.trim();
+  const vi=document.getElementById('mVi').value.trim();
   const p=parseInt(document.getElementById('mPrice').value);
   const c=document.getElementById('mCat').value;
   const num=document.getElementById('mNum').value.trim();
-  if(!n||!p){toast(T('toast_need'));return;}
-  // store same text in both langs (user can type either)
-  state.menu.push({id:state.nextId++,num:num,ko:n,vi:n,price:p,cat:c});save();
-  document.getElementById('mName').value='';document.getElementById('mPrice').value='';
-  document.getElementById('mNum').value='';
+  if((!ko&&!vi)||!p){toast(T('toast_need'));return;}
+  // 한쪽만 입력하면 다른 쪽도 같은 값으로 채움(전환 시 빈칸 방지)
+  state.menu.push({id:state.nextId++,num:num,ko:ko||vi,vi:vi||ko,price:p,cat:c});save();
+  document.getElementById('mKo').value='';document.getElementById('mVi').value='';
+  document.getElementById('mPrice').value='';document.getElementById('mNum').value='';
   renderMenuMgmt();toast(T('toast_add'));
 };
 
