@@ -164,7 +164,7 @@ main{flex:1;overflow:hidden}
 <body>
 <div class="app">
   <header>
-    <div class="logo">한입<span>POS</span></div>
+    <div class="logo">충만<span>POS</span></div>
     <nav>
       <button data-v="tables" class="on" data-t="nav_tables">테이블</button>
       <button data-v="manage" data-t="nav_manage">메뉴관리</button>
@@ -209,15 +209,16 @@ main{flex:1;overflow:hidden}
 
     <section class="view" id="manage">
       <div class="mform">
-        <div class="fld"><label data-t="f_name">메뉴명</label><input id="mName" placeholder="김치찌개 / Canh Kimchi"></div>
-        <div class="fld"><label data-t="f_price">가격</label><input id="mPrice" type="number" placeholder="8000"></div>
         <div class="fld"><label data-t="f_cat">분류</label>
           <select id="mCat"></select>
         </div>
+        <div class="fld"><label data-t="f_num">번호</label><input id="mNum" style="width:80px" placeholder="1"></div>
+        <div class="fld"><label data-t="f_name">메뉴명</label><input id="mName" placeholder="김치찌개 / Canh Kimchi"></div>
+        <div class="fld"><label data-t="f_price">가격</label><input id="mPrice" type="number" placeholder="8000"></div>
         <button class="addb" id="addMenu" data-t="add">+ 추가</button>
       </div>
       <table class="mtable">
-        <thead><tr><th data-t="f_cat">분류</th><th data-t="f_name">메뉴명</th><th data-t="f_price">가격</th><th></th></tr></thead>
+        <thead><tr><th data-t="f_cat">분류</th><th data-t="f_num">번호</th><th data-t="f_name">메뉴명</th><th data-t="f_price">가격</th><th></th></tr></thead>
         <tbody id="menuBody"></tbody>
       </table>
     </section>
@@ -300,7 +301,7 @@ const I18N={
     nav_tables:'테이블',nav_manage:'메뉴관리',nav_stats:'매출통계',nav_settings:'설정',nav_viewer:'매출조회',
     zone_hall:'홀 테이블',zone_chan:'포장 · 배달',
     back:'← 목록',total:'합계',approve:'승인(주방출력)',pay:'결제',
-    f_name:'메뉴명',f_price:'가격',f_cat:'분류',add:'+ 추가',
+    f_name:'메뉴명',f_price:'가격',f_cat:'분류',f_num:'번호',add:'+ 추가',
     s_today:'오늘 매출',s_count:'오늘 주문수',s_avg:'객단가',s_total:'누적 총매출',
     s_top:'인기 메뉴 TOP',s_hist:'결제 내역',s_clear:'기록 초기화',
     s_time:'시각',s_place:'위치',s_items:'항목',s_amt:'금액',
@@ -334,7 +335,7 @@ const I18N={
     nav_tables:'Bàn',nav_manage:'Thực đơn',nav_stats:'Doanh thu',nav_settings:'Cài đặt',nav_viewer:'Xem doanh thu',
     zone_hall:'Bàn tại quán',zone_chan:'Mang đi · Giao hàng',
     back:'← Danh sách',total:'Tổng',approve:'Xác nhận (in bếp)',pay:'Thanh toán',
-    f_name:'Tên món',f_price:'Giá',f_cat:'Phân loại',add:'+ Thêm',
+    f_name:'Tên món',f_price:'Giá',f_cat:'Phân loại',f_num:'Số',add:'+ Thêm',
     s_today:'Doanh thu hôm nay',s_count:'Số đơn hôm nay',s_avg:'TB/đơn',s_total:'Tổng doanh thu',
     s_top:'Món bán chạy',s_hist:'Lịch sử thanh toán',s_clear:'Xóa lịch sử',
     s_time:'Thời gian',s_place:'Vị trí',s_items:'Món',s_amt:'Số tiền',
@@ -373,29 +374,42 @@ const CATS=['main','side','drink','alc'];
 const catLabel=c=>T('cat_'+c);
 
 const DEFAULT_MENU=[
-  {id:1,ko:'김치찌개',vi:'Canh Kimchi',price:8000,cat:'main'},
-  {id:2,ko:'된장찌개',vi:'Canh tương đậu',price:8000,cat:'main'},
-  {id:3,ko:'제육볶음',vi:'Thịt heo xào cay',price:11000,cat:'main'},
-  {id:4,ko:'비빔밥',vi:'Cơm trộn Bibimbap',price:9000,cat:'main'},
-  {id:5,ko:'계란말이',vi:'Trứng cuộn',price:6000,cat:'side'},
-  {id:6,ko:'공기밥',vi:'Cơm trắng',price:1000,cat:'side'},
-  {id:7,ko:'콜라',vi:'Coca',price:2000,cat:'drink'},
-  {id:8,ko:'사이다',vi:'Sprite',price:2000,cat:'drink'},
-  {id:9,ko:'소주',vi:'Soju',price:5000,cat:'alc'},
-  {id:10,ko:'맥주',vi:'Bia',price:5000,cat:'alc'},
+  {id:1,num:'1',ko:'김치찌개',vi:'Canh Kimchi',price:8000,cat:'main'},
+  {id:2,num:'2',ko:'된장찌개',vi:'Canh tương đậu',price:8000,cat:'main'},
+  {id:3,num:'3',ko:'제육볶음',vi:'Thịt heo xào cay',price:11000,cat:'main'},
+  {id:4,num:'4',ko:'비빔밥',vi:'Cơm trộn Bibimbap',price:9000,cat:'main'},
+  {id:5,num:'5',ko:'계란말이',vi:'Trứng cuộn',price:6000,cat:'side'},
+  {id:6,num:'6',ko:'공기밥',vi:'Cơm trắng',price:1000,cat:'side'},
+  {id:7,num:'7',ko:'콜라',vi:'Coca',price:2000,cat:'drink'},
+  {id:8,num:'8',ko:'사이다',vi:'Sprite',price:2000,cat:'drink'},
+  {id:9,num:'9',ko:'소주',vi:'Soju',price:5000,cat:'alc'},
+  {id:10,num:'10',ko:'맥주',vi:'Bia',price:5000,cat:'alc'},
 ];
 const NUM_TABLES=12;
-const CHANNELS=['pack','shopee','grab']; // takeout / shopee / grab
+const CHAN_TYPES=['pack','shopee','grab']; // takeout / shopee / grab
+const CHAN_COUNT=8; // 각 채널당 칸 개수
 const DEFAULT_SHOP={name:'한입식당',addr:'',tel:'',tax:'',foot:'',cur:'đ'};
 
 let state=load();
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.menu){
     s.shop=Object.assign({},DEFAULT_SHOP,s.shop||{});
-    if(s.lang)LANG=s.lang;return s;}}catch(e){}
+    if(s.lang)LANG=s.lang;
+    // ensure all place carts exist (migration)
+    s.carts=s.carts||{};
+    for(let i=1;i<=NUM_TABLES;i++)if(!s.carts['T'+i])s.carts['T'+i]=[];
+    CHAN_TYPES.forEach(t=>{
+      // migrate old single channel key (e.g. 'pack') into 'pack1'
+      if(s.carts[t]&&s.carts[t].length&&!s.carts[t+'1'])s.carts[t+'1']=s.carts[t];
+      if(s.carts[t]!==undefined)delete s.carts[t];
+      for(let i=1;i<=CHAN_COUNT;i++)if(!s.carts[t+i])s.carts[t+i]=[];
+    });
+    // ensure menu items have a num field
+    s.menu.forEach((m,idx)=>{if(m.num===undefined)m.num='';});
+    return s;}}catch(e){}
   const carts={};
   for(let i=1;i<=NUM_TABLES;i++)carts['T'+i]=[];
-  CHANNELS.forEach(c=>carts[c]=[]);
+  CHAN_TYPES.forEach(t=>{for(let i=1;i<=CHAN_COUNT;i++)carts[t+i]=[];});
   return {menu:[...DEFAULT_MENU],nextId:11,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
 }
 function save(){state.lang=LANG;localStorage.setItem(KEY,JSON.stringify(state));scheduleAutoPush();}
@@ -408,6 +422,8 @@ const today=()=>new Date().toISOString().slice(0,10);
 /* place key -> display name */
 function placeName(key){
   if(key[0]==='T')return key.slice(1)+T('table');
+  const m=key.match(/^([a-z]+)(\d+)$/);
+  if(m)return T(m[1])+' '+m[2];
   return T(key);
 }
 
@@ -458,7 +474,11 @@ function renderTables(){
   for(let i=1;i<=NUM_TABLES;i++)hall.appendChild(tableCard('T'+i,i+'',''));
   const chan=document.getElementById('tgridChan');chan.innerHTML='';
   const tagmap={pack:'tag-pack',shopee:'tag-shopee',grab:'tag-grab'};
-  CHANNELS.forEach(c=>chan.appendChild(tableCard(c,T(c),tagmap[c],T(c))));
+  CHAN_TYPES.forEach(t=>{
+    for(let i=1;i<=CHAN_COUNT;i++){
+      chan.appendChild(tableCard(t+i,i+'',tagmap[t],T(t)));
+    }
+  });
 }
 
 /* ---------- order ---------- */
@@ -479,11 +499,22 @@ function renderCats(){
     c.appendChild(b);
   });
 }
+function menuSorted(list){
+  return list.slice().sort((a,b)=>{
+    const na=parseInt(a.num),nb=parseInt(b.num);
+    if(!isNaN(na)&&!isNaN(nb))return na-nb;
+    if(!isNaN(na))return -1;
+    if(!isNaN(nb))return 1;
+    return 0;
+  });
+}
 function renderMenu(){
   const g=document.getElementById('mgrid');g.innerHTML='';
-  state.menu.filter(m=>activeCat==='all'||m.cat===activeCat).forEach(m=>{
+  const list=menuSorted(state.menu.filter(m=>activeCat==='all'||m.cat===activeCat));
+  list.forEach(m=>{
     const d=document.createElement('div');d.className='mitem';
-    d.innerHTML=`<div class="mn">${mName(m)}</div><div class="mp">${money(m.price)}</div>`;
+    const numTag=m.num?`<div style="font-size:12px;color:var(--dim);margin-bottom:2px">${m.num}</div>`:'';
+    d.innerHTML=`${numTag}<div class="mn">${mName(m)}</div><div class="mp">${money(m.price)}</div>`;
     d.onclick=()=>addToCart(m);
     g.appendChild(d);
   });
@@ -491,7 +522,7 @@ function renderMenu(){
 function addToCart(m){
   const cart=state.carts[activePlace];
   const ex=cart.find(c=>c.id===m.id);
-  if(ex)ex.qty++;else cart.push({id:m.id,ko:m.ko,vi:m.vi,price:m.price,qty:1});
+  if(ex)ex.qty++;else cart.push({id:m.id,num:m.num,ko:m.ko,vi:m.vi,price:m.price,qty:1});
   save();renderCart();
 }
 function chgQty(id,d){
@@ -523,7 +554,7 @@ function buildReceipt(o,mode){ // mode: 'kitchen' | 'bill'
   const dt=new Date();
   const stamp=dt.toLocaleString(LANG==='vi'?'vi-VN':'ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   const rows=o.items.map(it=>
-    `<div class="r-item"><div class="ri-n">${mName(it)}</div>
+    `<div class="r-item"><div class="ri-n">${it.num?(it.num+'. '):''}${mName(it)}</div>
      <div class="ri-q">${it.qty}</div>
      <div class="ri-p">${mode==='kitchen'?'':fmt(it.price*it.qty)}</div></div>`).join('');
   let html;
@@ -574,7 +605,7 @@ document.getElementById('payBtn').onclick=()=>{
     no:state.seq++,date:today(),
     time:new Date().toLocaleTimeString(LANG==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'}),
     place:activePlace,placeLabel:placeName(activePlace),
-    items:cart.map(c=>({ko:c.ko,vi:c.vi,qty:c.qty,price:c.price})),total:tot
+    items:cart.map(c=>({num:c.num,ko:c.ko,vi:c.vi,qty:c.qty,price:c.price})),total:tot
   };
   state.history.push(rec);
   state.carts[activePlace]=[];save();
@@ -593,10 +624,10 @@ function fillCatSelect(){
 function renderMenuMgmt(){
   fillCatSelect();
   const b=document.getElementById('menuBody');b.innerHTML='';
-  state.menu.forEach(m=>{
+  menuSorted(state.menu).forEach(m=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${mName(m)}</td><td>${money(m.price)}</td>
-      <td><button class="delb" data-t="">${LANG==='ko'?'삭제':'Xóa'}</button></td>`;
+    tr.innerHTML=`<td><span class="catpill">${catLabel(m.cat)}</span></td><td>${m.num||''}</td><td>${mName(m)}</td><td>${money(m.price)}</td>
+      <td><button class="delb">${LANG==='ko'?'삭제':'Xóa'}</button></td>`;
     tr.querySelector('.delb').onclick=()=>{state.menu=state.menu.filter(x=>x.id!==m.id);save();renderMenuMgmt();};
     b.appendChild(tr);
   });
@@ -605,10 +636,12 @@ document.getElementById('addMenu').onclick=()=>{
   const n=document.getElementById('mName').value.trim();
   const p=parseInt(document.getElementById('mPrice').value);
   const c=document.getElementById('mCat').value;
+  const num=document.getElementById('mNum').value.trim();
   if(!n||!p){toast(T('toast_need'));return;}
   // store same text in both langs (user can type either)
-  state.menu.push({id:state.nextId++,ko:n,vi:n,price:p,cat:c});save();
+  state.menu.push({id:state.nextId++,num:num,ko:n,vi:n,price:p,cat:c});save();
   document.getElementById('mName').value='';document.getElementById('mPrice').value='';
+  document.getElementById('mNum').value='';
   renderMenuMgmt();toast(T('toast_add'));
 };
 
