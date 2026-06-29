@@ -475,6 +475,47 @@ const DEFAULT_MENU=[
   {id:21,num:'21',ko:'간장파닭',vi:'',price:210000,priceL:380000,cat:'main',opt:true},
   {id:22,num:'22',ko:'치즈 몬스터',vi:'',price:210000,priceL:380000,cat:'main',opt:true},
   {id:23,num:'23',ko:'맵스노우',vi:'',price:200000,priceL:360000,cat:'main',opt:true},
+  {id:24,num:'24',ko:'찜닭',vi:'',price:250000,cat:'side'},
+  {id:25,num:'25',ko:'닭도리탕(3~4인분)',vi:'',price:480000,cat:'side'},
+  {id:26,num:'26',ko:'감자탕(2~3인분)',vi:'',price:350000,cat:'side'},
+  {id:27,num:'27',ko:'오뎅탕',vi:'',price:250000,cat:'side'},
+  {id:28,num:'28',ko:'홍합탕',vi:'',price:350000,cat:'side'},
+  {id:29,num:'29',ko:'후라이드 똥집',vi:'',price:150000,cat:'side'},
+  {id:30,num:'30',ko:'티꾸 간장 똥집',vi:'',price:150000,cat:'side'},
+  {id:31,num:'31',ko:'티꾸 고추장 똥집',vi:'',price:150000,cat:'side'},
+  {id:32,num:'32',ko:'똥집 모듬',vi:'',price:320000,cat:'side'},
+  {id:33,num:'33',ko:'충만 닭전',vi:'',price:160000,cat:'side'},
+  {id:34,num:'34',ko:'충만 닭발',vi:'',price:250000,cat:'side'},
+  {id:35,num:'35',ko:'먹태&견과류',vi:'',price:200000,cat:'side'},
+  {id:36,num:'36',ko:'충만 떡볶이',vi:'',price:140000,cat:'side'},
+  {id:37,num:'37',ko:'충만 치즈 떡볶이',vi:'',price:180000,cat:'side'},
+  {id:38,num:'38',ko:'짜장떡볶이',vi:'',price:160000,cat:'side'},
+  {id:39,num:'39',ko:'마라떡볶이',vi:'',price:180000,cat:'side'},
+  {id:40,num:'40',ko:'튀김류(택1)',vi:'',price:50000,cat:'side'},
+  {id:41,num:'41',ko:'모듬튀김류',vi:'',price:150000,cat:'side'},
+  {id:42,num:'42',ko:'뿌링클감자튀김',vi:'',price:60000,cat:'side'},
+  {id:43,num:'43',ko:'충만주먹밥',vi:'',price:80000,cat:'side'},
+  {id:44,num:'44',ko:'충만치즈볼(3개)',vi:'',price:60000,cat:'side'},
+  {id:45,num:'45',ko:'샐러드 화이트소스',vi:'',price:70000,cat:'side'},
+  {id:46,num:'46',ko:'떡볶이튀김세트(3~4인분)',vi:'',price:45000,cat:'side'},
+  {id:47,num:'47',ko:'치킨소스추가',vi:'',price:20000,cat:'side'},
+  {id:48,num:'48',ko:'공기밥',vi:'',price:20000,cat:'side'},
+  {id:49,num:'49',ko:'어묵우동',vi:'',price:100000,cat:'side'},
+  {id:50,num:'50',ko:'라면',vi:'',price:80000,cat:'side'},
+  {id:51,num:'51',ko:'물냉면',vi:'',price:100000,cat:'side'},
+  {id:52,num:'52',ko:'비빔냉면',vi:'',price:100000,cat:'side'},
+  {id:53,num:'53',ko:'그릴드치킨피자',vi:'',price:160000,priceL:220000,cat:'side',opt:true},
+  {id:54,num:'54',ko:'고르곤졸라피자',vi:'',price:160000,priceL:220000,cat:'side',opt:true},
+  {id:55,num:'55',ko:'페페로니피자',vi:'',price:160000,priceL:220000,cat:'side',opt:true},
+  {id:56,num:'62',ko:'레몬에이드',vi:'',price:70000,cat:'drink'},
+  {id:57,num:'63',ko:'콜라/사이다/환타',vi:'',price:20000,cat:'drink'},
+  {id:58,num:'64',ko:'아침햇살',vi:'',price:50000,cat:'drink'},
+  {id:59,num:'56',ko:'캔맥주(타이거)',vi:'',price:40000,cat:'alc'},
+  {id:60,num:'57',ko:'소주',vi:'',price:140000,cat:'alc'},
+  {id:61,num:'58',ko:'생맥주',vi:'',price:50000,cat:'alc'},
+  {id:62,num:'59',ko:'충만 하이볼',vi:'',price:120000,cat:'alc'},
+  {id:63,num:'60',ko:'자몽 하이볼',vi:'',price:120000,cat:'alc'},
+  {id:64,num:'61',ko:'블루레몬 하이볼',vi:'',price:120000,cat:'alc'},
 ];
 const NUM_TABLES=12;
 const CHAN_TYPES=['pack','shopee','grab']; // takeout / shopee / grab
@@ -505,7 +546,7 @@ function load(){
   const carts={};
   for(let i=1;i<=NUM_TABLES;i++)carts['T'+i]=[];
   CHAN_TYPES.forEach(t=>{for(let i=1;i<=CHAN_COUNT;i++)carts[t+i]=[];});
-  return {menu:[...DEFAULT_MENU],nextId:24,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
+  return {menu:[...DEFAULT_MENU],nextId:65,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
 }
 function save(){state.lang=LANG;localStorage.setItem(KEY,JSON.stringify(state));scheduleAutoPush();}
 
