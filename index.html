@@ -452,16 +452,29 @@ const CATS=['main','side','drink','alc'];
 const catLabel=c=>T('cat_'+c);
 
 const DEFAULT_MENU=[
-  {id:1,num:'1',ko:'김치찌개',vi:'Canh Kimchi',price:8000,cat:'main'},
-  {id:2,num:'2',ko:'된장찌개',vi:'Canh tương đậu',price:8000,cat:'main'},
-  {id:3,num:'3',ko:'제육볶음',vi:'Thịt heo xào cay',price:11000,cat:'main'},
-  {id:4,num:'4',ko:'비빔밥',vi:'Cơm trộn Bibimbap',price:9000,cat:'main'},
-  {id:5,num:'5',ko:'계란말이',vi:'Trứng cuộn',price:6000,cat:'side'},
-  {id:6,num:'6',ko:'공기밥',vi:'Cơm trắng',price:1000,cat:'side'},
-  {id:7,num:'7',ko:'콜라',vi:'Coca',price:2000,cat:'drink'},
-  {id:8,num:'8',ko:'사이다',vi:'Sprite',price:2000,cat:'drink'},
-  {id:9,num:'9',ko:'소주',vi:'Soju',price:5000,cat:'alc'},
-  {id:10,num:'10',ko:'맥주',vi:'Bia',price:5000,cat:'alc'},
+  {id:1,num:'1',ko:'카스테라치킨',vi:'',price:280000,cat:'main'},
+  {id:2,num:'2',ko:'콤보메뉴4',vi:'',price:470000,cat:'main'},
+  {id:3,num:'3',ko:'콤보메뉴5',vi:'',price:550000,cat:'main'},
+  {id:4,num:'4',ko:'스노우 어니언',vi:'',price:200000,priceL:380000,cat:'main',opt:true},
+  {id:5,num:'5',ko:'커리스노우 어니언',vi:'',price:210000,priceL:400000,cat:'main',opt:true},
+  {id:6,num:'6',ko:'핫 스노우 어니언',vi:'',price:210000,priceL:400000,cat:'main',opt:true},
+  {id:7,num:'7',ko:'스모크치즈 간장',vi:'',price:200000,priceL:380000,cat:'main',opt:true},
+  {id:8,num:'8',ko:'스모크치즈 고추장',vi:'',price:200000,priceL:380000,cat:'main',opt:true},
+  {id:9,num:'9',ko:'스모크치즈 커리',vi:'',price:200000,priceL:380000,cat:'main',opt:true},
+  {id:10,num:'10',ko:'스모크치즈 갈릭',vi:'',price:200000,priceL:380000,cat:'main',opt:true},
+  {id:11,num:'11',ko:'스모크치즈 하오츠',vi:'',price:200000,priceL:380000,cat:'main',opt:true},
+  {id:12,num:'12',ko:'간장티꾸닭',vi:'',price:210000,priceL:390000,cat:'main',opt:true},
+  {id:13,num:'13',ko:'고추장티꾸닭',vi:'',price:210000,priceL:390000,cat:'main',opt:true},
+  {id:14,num:'14',ko:'커리티꾸닭',vi:'',price:210000,priceL:390000,cat:'main',opt:true},
+  {id:15,num:'15',ko:'갈릭티꾸닭',vi:'',price:210000,priceL:390000,cat:'main',opt:true},
+  {id:16,num:'16',ko:'하오츠티꾸닭',vi:'',price:210000,priceL:390000,cat:'main',opt:true},
+  {id:17,num:'17',ko:'충만 후라이드',vi:'',price:180000,priceL:330000,cat:'main',opt:true},
+  {id:18,num:'18',ko:'매콤마늘양념치킨',vi:'',price:190000,priceL:350000,cat:'main',opt:true},
+  {id:19,num:'19',ko:'레드핫치킨',vi:'',price:190000,priceL:350000,cat:'main',opt:true},
+  {id:20,num:'20',ko:'마늘 간장치킨',vi:'',price:190000,priceL:350000,cat:'main',opt:true},
+  {id:21,num:'21',ko:'간장파닭',vi:'',price:210000,priceL:380000,cat:'main',opt:true},
+  {id:22,num:'22',ko:'치즈 몬스터',vi:'',price:210000,priceL:380000,cat:'main',opt:true},
+  {id:23,num:'23',ko:'맵스노우',vi:'',price:200000,priceL:360000,cat:'main',opt:true},
 ];
 const NUM_TABLES=12;
 const CHAN_TYPES=['pack','shopee','grab']; // takeout / shopee / grab
@@ -492,7 +505,7 @@ function load(){
   const carts={};
   for(let i=1;i<=NUM_TABLES;i++)carts['T'+i]=[];
   CHAN_TYPES.forEach(t=>{for(let i=1;i<=CHAN_COUNT;i++)carts[t+i]=[];});
-  return {menu:[...DEFAULT_MENU],nextId:11,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
+  return {menu:[...DEFAULT_MENU],nextId:24,carts,history:[],shop:{...DEFAULT_SHOP},seq:1,lang:'ko'};
 }
 function save(){state.lang=LANG;localStorage.setItem(KEY,JSON.stringify(state));scheduleAutoPush();}
 
